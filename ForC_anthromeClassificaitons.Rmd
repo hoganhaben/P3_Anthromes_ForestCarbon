@@ -1,0 +1,588 @@
+---
+title: "FOR-C ANTHROMES"
+author: "JAH"
+date: "`r Sys.Date()`"
+output: 
+  html_document: 
+    toc: true
+    toc_float: true
+    toc_collapsed: true
+    toc_depth: 3
+---
+
+# Background
+This file contains code which takes Anthromes data from HYDE 3.3 (https://doi.org/10.24416/UU01-94FNH0), and forest carbon stock data from Kristina Anderson-Texiera's ForC database (https://github.com/forc-db/ForC), and combines them into analyses for Fig 1A and B. 
+Statistical analyses (ANOVAs) are also included below. 
+
+
+
+# Forest carbon stock comparison -- Temperate/ boreal vs. tropical  -- Anderson-Texiera's ForC database
+
+```{r}
+### read in the data
+library(readr)
+
+# plot data - with Carbon stocks
+ForC_plots <- read_csv("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ForC_db/ForC_plots.csv")
+
+# site data - with the site coordinates and other data
+ForC_sites <- read_csv("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ForC_db/ForC_sites.csv")
+
+ForC_measurements <- read_csv("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ForC_db/ForC_measurements.csv")
+
+```
+
+```{r}
+### step necessary if you to do classical biome classification / if you first want to subset to forests before classifying Anthromes -- 3.12.2024 - this step was taken out of the analysis. 
+
+
+# ## read in the Ramankutty & Foley Biomes Map
+# biomes <- raster::raster("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/potential_veg_xdeg_961/data/potential_veg_hd.asc") 
+# 
+# ## first do a biomes extraction and take only the sites that occur in "FORESTS" according to the BIOME Map - i.e., Biomes 1-8:    
+# #1 -- Tropical Evergreen Forest/Woodland
+# #2 -- Tropical Deciduous Forest/Woodland
+# #3 -- Temperate Broadleaf Evergreen Forest/Woodland
+# #4 -- Temperate Needleleaf Evergreen Forest/Woodland
+# #5 -- Temperate Deciduous Forest/Woodland
+# #6 -- Boreal Evergreen Forest/Woodland
+# #7 -- Boreal Deciduous Forest/Woodland
+# #8 -- Mixed Forest
+# 
+# ## create spatial points object
+# forC_coords_sp <- SpatialPoints(ForC_sites[,c("lon","lat")])
+# ## extract data
+# extr_biomes <- raster::extract(biomes, forC_coords_sp , sp = T)
+# ## make as data frame
+# extr_biomes_df <- as.data.frame(extr_biomes)
+```
+```{r}
+## subset ForC sites to those in "forested biomes"
+# ForC_sites_sub <- ForC_sites[extr_biomes_df$potential_veg_hd %in% 1:8,]
+```
+
+```{r}
+## read in the 2023 Anthromes Raster -- 
+library(raster)
+anthromes <- raster::raster("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/anthromes2023AD.asc")
+
+## create spatial points object
+forC_coords_sp <- SpatialPoints(ForC_sites[,c("lon","lat")])   # 5241 site coords 
+
+#### extract 
+# extr_anthromes <- raster::extract(anthromes, forC_coords_sp_sub , sp = T)
+extr_anthromes <- raster::extract(anthromes, forC_coords_sp, sp = T)
+
+## make as data frame
+extr_anthromes_df <- as.data.frame(extr_anthromes)
+```
+
+
+
+```{R}
+### RECLASSIFYING the HYDE 3.3 2023 Antrhomes map to 6, 5 and 3 Classificaitons -- see Ellis et al PNAS 2021
+# excel file = anthromes_12K_DGG_v1_map_legend_2021_04_01.xlsx
+#########################################################################
+
+################################
+# ANTHROMES 6 classes 
+################################
+extr_anthromes_df$anthromes2023_6CL <- -9999
+
+## ANTHROMES reclassification  6CL
+## make classifications 11 and 12 as dense settlements
+extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 11 ,]$anthromes2023_6CL <- "dense settlement"
+extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 12 ,]$anthromes2023_6CL <- "dense settlement"
+
+## classifications 21-24  are villages
+extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 21,]$anthromes2023_6CL <- "villages"
+extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 22,]$anthromes2023_6CL <- "villages"
+extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 23,]$anthromes2023_6CL <- "villages"
+extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 24,]$anthromes2023_6CL <- "villages"
+
+## classifications 31-34  are croplands
+extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 31,]$anthromes2023_6CL <- "croplands"
+extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 32,]$anthromes2023_6CL <- "croplands"
+extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 33,]$anthromes2023_6CL <- "croplands"
+extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 34,]$anthromes2023_6CL <- "croplands"
+
+## classifications 41-43 are rangelands
+extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 41,]$anthromes2023_6CL <- "rangelands"
+extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 42,]$anthromes2023_6CL <- "rangelands"
+extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 43,]$anthromes2023_6CL <- "rangelands"
+
+## classifications 51-54 are cultured
+extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 51,]$anthromes2023_6CL <- "cultured"
+extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 52,]$anthromes2023_6CL <- "cultured"
+extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 53,]$anthromes2023_6CL <- "cultured"
+extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 54,]$anthromes2023_6CL <- "cultured"
+
+## classifications 61-63 are wildlands
+extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 61,]$anthromes2023_6CL <- "wildlands"
+extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 62,]$anthromes2023_6CL <- "wildlands"
+# extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 63,]$anthromes2023_6CL <- "wildlands"
+
+
+################################
+# ANTHROMES 5 classes 
+################################
+
+extr_anthromes_df$anthromes2023_5CL <- -9999
+
+## ANTHROMES reclassification  6CL
+## make classifications 11 and 24 as SETTLED
+extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 11 ,]$anthromes2023_5CL <- "settled"
+extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 12 ,]$anthromes2023_5CL <- "settled"
+extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 21,]$anthromes2023_5CL <- "settled"
+extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 22,]$anthromes2023_5CL <- "settled"
+extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 23,]$anthromes2023_5CL <- "settled"
+extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 24,]$anthromes2023_5CL <- "settled"
+
+## classifications 31-34  are croplands
+extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 31,]$anthromes2023_5CL <- "croplands"
+extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 32,]$anthromes2023_5CL <- "croplands"
+extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 33,]$anthromes2023_5CL <- "croplands"
+extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 34,]$anthromes2023_5CL <- "croplands"
+
+## classifications 41-43 are rangelands
+extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 41,]$anthromes2023_5CL <- "rangelands"
+extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 42,]$anthromes2023_5CL <- "rangelands"
+extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 43,]$anthromes2023_5CL <- "rangelands"
+
+## classifications 51-54 are cultured
+extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 51,]$anthromes2023_5CL <- "cultured"
+extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 52,]$anthromes2023_5CL <- "cultured"
+extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 53,]$anthromes2023_5CL <- "cultured"
+extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 54,]$anthromes2023_5CL <- "cultured"
+
+## classifications 61-63 are wildlands
+extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 61,]$anthromes2023_5CL <- "wildlands"
+extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 62,]$anthromes2023_5CL <- "wildlands"
+# extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 63,]$anthromes2023_5CL <- "wildlands"
+
+################################
+# ANTHROMES 3 classes 
+################################
+extr_anthromes_df$anthromes2023_3CL <- -9999
+
+## ANTHROMES reclassification  6CL
+## make classifications 11 - 43 as intensive anthromes
+extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 11,]$anthromes2023_3CL <- "intensive"
+extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 12,]$anthromes2023_3CL <- "intensive"
+extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 21,]$anthromes2023_3CL <- "intensive"
+extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 22,]$anthromes2023_3CL <- "intensive"
+extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 23,]$anthromes2023_3CL <- "intensive"
+extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 24,]$anthromes2023_3CL <- "intensive"
+extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 31,]$anthromes2023_3CL <- "intensive"
+extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 32,]$anthromes2023_3CL <- "intensive"
+extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 33,]$anthromes2023_3CL <- "intensive"
+extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 34,]$anthromes2023_3CL <- "intensive"
+extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 41,]$anthromes2023_3CL <- "intensive"
+extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 42,]$anthromes2023_3CL <- "intensive"
+extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 43,]$anthromes2023_3CL <- "intensive"
+
+## classifications 51-54 are cultured
+extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 51,]$anthromes2023_3CL <- "cultured"
+extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 52,]$anthromes2023_3CL <- "cultured"
+extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 53,]$anthromes2023_3CL <- "cultured"
+extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 54,]$anthromes2023_3CL <- "cultured"
+
+## classifications 61-63 are wildlands
+extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 61,]$anthromes2023_3CL <- "wildlands"
+extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 62,]$anthromes2023_3CL <- "wildlands"
+# extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 63,]$anthromes2023_3CL <- "wildlands"
+```
+
+
+
+```{r}
+### add column for Anthromes classification from the extracted site coords
+ForC_sites$anthromes2023AD <- extr_anthromes_df$anthromes2023AD
+ForC_sites$anthromes2023_6CL <- extr_anthromes_df$anthromes2023_6CL
+ForC_sites$anthromes2023_5CL <- extr_anthromes_df$anthromes2023_5CL
+ForC_sites$anthromes2023_3CL <- extr_anthromes_df$anthromes2023_3CL
+
+ForC_countryClasses <- read_csv("C:/Users/JamesHogan/OneDrive - USDA/ForC_countryClasses.csv")
+
+ForC_sites <- merge(ForC_sites, ForC_countryClasses, by.x = "country", by.y = "ForC_Country")
+```
+
+```{r}
+## merge the dataset
+ForC_merged <- merge(ForC_measurements, ForC_sites, by = "sites.sitename")
+
+ForC_merged$anthromes2023_3CL <- factor(ForC_merged$anthromes2023_3CL, levels = c("intensive", "cultured", "wildlands", "-9999"))
+
+```
+
+
+# compute summaries 
+## total_ecosystem C - soil included 
+```{r}
+library(dplyr)
+
+ForC_merged[ForC_merged$variable.name == "total.ecosystem_C",] %>% group_by(Global_classification, anthromes2023_3CL) %>% summarize(n = sum(as.numeric(n), na.rm = T), mean = mean(mean, na.rm = T), se = (sd(mean, na.rm = T)/sqrt(as.numeric(n))) )
+```
+
+## total_ecosystem C - soil 
+```{r}
+ForC_merged[ForC_merged$variable.name == "total.ecosystem_2_C",] %>% group_by(Global_classification, anthromes2023_3CL) %>% summarize(n = sum(as.numeric(n), na.rm = T), mean = mean(mean, na.rm = T), se = plotrix::std.error(mean, na.rm = T))
+```
+
+## aboveground C
+```{r}
+ForC_merged[!ForC_merged$anthromes2023_3CL == -9999 & ForC_merged$variable.name == "biomass_ag_C",] %>% 
+  group_by(Global_classification, anthromes2023_3CL) %>% 
+  summarize(n = sum(as.numeric(n), na.rm = T), 
+            mean = mean(mean, na.rm = T), 
+            se = sd(mean, na.rm = T))
+```
+
+## aboveground C
+```{r}
+ForC_merged[ForC_merged$variable.name == "soil_C",] %>% group_by(Global_classification, anthromes2023AD) %>% summarize(n = sum(as.numeric(n), na.rm = T), mean = mean(mean, na.rm = T), se = plotrix::std.error(mean, na.rm = T))
+```
+
+# make some plots 
+## total_ecosystem C - soil included 
+```{r}
+library(ggplot2)
+
+gg.totalC <- ggplot(aes(x = as.factor(anthromes2023_3CL), y = mean), 
+                    data = ForC_merged[ForC_merged$variable.name == "total.ecosystem_C",]) +
+             facet_wrap(vars(Global_classification)) +
+             geom_point(position = "jitter") + theme_minimal()
+          
+gg.totalC
+
+```
+
+### biomass C
+```{r}
+gg.biomassC <- ggplot(aes(x = as.factor(anthromes2023_3CL), y = mean), 
+                    data = ForC_merged[ForC_merged$variable.name == "biomass_C",]) +
+               facet_wrap(vars(Global_classification)) + xlab("Forest Anthrome") + 
+               scale_x_discrete(labels = c('residential', 'populated', 'remote', "wild")) +
+               geom_point(position = "jitter") + theme_minimal()
+          
+gg.biomassC
+
+```
+
+### aboveground Biomass OM
+```{r}
+## compute mean data to overlay on top of points 
+summ_AB_OM <- Rmisc::summarySE(ForC_merged[ForC_merged$variable.name == "biomass_ag_OM",], 
+                 measurevar = "mean", groupvars = c("anthromes2023AD", "Global_classification"))
+
+summ_AB_OM
+
+```
+
+```{r}
+summ_AB_OM_3c <- Rmisc::summarySE(ForC_merged[!ForC_merged$anthromes2023_3CL == -9999 & ForC_merged$variable.name == "biomass_ag_OM",], 
+                 measurevar = "mean", groupvars = c("anthromes2023_3CL", "Global_classification"))
+
+
+summ_AB_OM_3c$anthromes2023_3CL <- factor(summ_AB_OM_3c$anthromes2023_3CL, levels = c("intensive", "cultured", "wildlands"))
+
+summ_AB_OM_3c
+```
+
+```{r}
+Rmisc::summarySE(ForC_merged[!ForC_merged$anthromes2023_3CL == -9999 & ForC_merged$variable.name == "std.age",], 
+                 measurevar = "mean", groupvars = c("anthromes2023_3CL", "Global_classification"))
+```
+
+
+```{r}
+gg.biomass_ag_OM <- ggplot() + geom_hline(yintercept = 0, lty = 3) +
+             geom_hline(yintercept = 300, lty = 3) + geom_hline(yintercept = 600, lty = 3) + geom_hline(yintercept = 900, lty = 3) + 
+             geom_hline(yintercept = 1200, lty = 3) +
+             facet_wrap(vars(Global_classification)) +
+             geom_point(aes(x = as.factor(anthromes2023_3CL), y = mean), 
+                        data = ForC_merged[!ForC_merged$anthromes2023_3CL == -9999 & ForC_merged$variable.name == "biomass_ag_OM",],
+                        position = "jitter", color = "#808080BF", size = 0.5) + 
+             theme_classic() + ylab(expression("AGB (Mg ha"^-1*")")) +
+             xlab("Anthrome") + #scale_x_discrete(labels = c('residential', 'populated', 'remote', "wild")) +
+             geom_point(aes(x = as.factor(anthromes2023_3CL), y = mean, color = as.factor(anthromes2023_3CL)), 
+                        data = summ_AB_OM_3c, size = 3) + 
+             geom_errorbar(aes(x = as.factor(anthromes2023_3CL), y = mean, ymax = mean + se, ymin = mean - se, color = as.factor(anthromes2023_3CL)), 
+                           data = summ_AB_OM_3c, size = 1) +
+             scale_color_manual(values = c("#efcb68BF", "#70a0afBF", "#160c28BF")) + 
+             scale_y_continuous(trans = 'sqrt', limits = c(-2,1100)) +
+             theme(legend.position = "none")#,
+                   #axis.text.x = element_text(angle = 15, hjust = 1, vjust = 1)) 
+
+
+# tiff(file = "ForC_AGB_stocks_by_Anthrome.tiff", width = 12, height = 7.41, units = "cm", res = 600, compression = "lzw")          
+gg.biomass_ag_OM
+# dev.off()
+```
+
+
+```{r}
+biomass_df <- ForC_merged[!ForC_merged$anthromes2023_3CL == -9999 & ForC_merged$variable.name == "biomass_ag_OM",]
+```
+
+```{r}
+ggBox.biomass_ag_OM <- ggpubr::ggboxplot(biomass_df,
+                                         x = "anthromes2023_3CL", y = "mean", color = "anthromes2023_3CL", 
+                                         palette = c("#efcb68BF", "#70a0afBF", "#160c28BF"), add.params = list(alpha = 0.3, shape = "."),
+                                         add = "jitter", facet.by = "Global_classification",  legend = "none") +
+                                         labs(x = "3-class Anthrome", y = expression("AGB (Mg ha"^-1*")")) 
+
+                                              
+                                              
+                                              
+my_pairs <- list(c("intensive", "cultured"), c("cultured", "wildlands"), c("intensive", "wildlands"))
+
+ggBox.biomass_ag_OM + stat_compare_means(method = "anova", label.y = 31 ) + stat_compare_means(comparisons = my_pairs, label = "p.signif", label.y = c(21, 24, 27)) + 
+                      scale_y_continuous(trans = 'sqrt', limits = c(-2,1000))
+
+
+```
+
+
+### aboveground Biomass C
+
+```{r}
+## compute mean data to overlay on top of points 
+summ_ABC <- Rmisc::summarySE(ForC_merged[ForC_merged$variable.name == "biomass_ag_C",], 
+                 measurevar = "mean", groupvars = c("anthromes2023_3CL", "Global_classification"))
+
+summ_ABC
+
+```
+
+## MAPPING -- FIG 1A 
+
+```{r}
+gg.biomass_ag_C <- ggplot() + geom_hline(yintercept = 0) +
+             facet_wrap(vars(Global_classification)) +
+             geom_point(aes(x = as.factor(anthromes2023_3CL), y = mean), 
+                        data = ForC_merged[ForC_merged$variable.name == "biomass_ag_C",],
+                        position = "jitter", color = "#808080BF") + theme_classic() + ylab(expression("Aboveground Biomass Carbon (Mg C ha"^-1*")")) +
+             xlab("Forest Anthrome") + 
+             geom_point(aes(x = as.factor(anthromes2023_3CL), y = mean, color = as.factor(anthromes2023_3CL)), 
+                        data = summ_ABC, size = 3) + 
+             geom_errorbar(aes(x = as.factor(anthromes2023_3CL), y = mean, ymax = mean + se, ymin = mean - se, color = as.factor(anthromes2023_3CL)), 
+                           data = summ_ABC, size = 1) +
+             scale_color_manual(values = c("#efcb68BF", "#70a0afBF", "#160c28BF")) + theme(legend.position = "none") + ylim(c(-2,1100))
+          
+gg.biomass_ag_C
+
+```
+
+
+```{r}
+## read in the data 
+
+anth_2023 <- read.table("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/anthromes2023AD.asc", sep = " ", header = FALSE, skip = 6,  na.strings = "-1")
+
+## ascii file dimentions
+ncols <-  4320
+nrows <- 2160
+
+r.mat <- as.matrix(anth_2023, nrow = nrows, ncol = ncols)
+
+r <- raster::raster("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/anthromes2023AD.asc")
+
+### original rasterdf 
+ras_df <- as.data.frame(r, xy = TRUE) 
+```
+
+```{r}
+### for plotting
+countries <- rnaturalearth::ne_countries(returnclass = "sf")
+
+## reproject raster
+crs <- "+proj=robin +lon_0=0 +x_0=0 +y_0=0 +datum=WGS84 +units=m"
+
+r_robinson <- projectRaster(r, crs = crs, method = "ngb" )
+```
+
+```{r}
+### add mask 
+library(geosphere)
+e <- as(extent(r), "SpatialPolygons")
+crs(e) <- crs(r)
+e <- makePoly(e)  # add additional vertices
+re <- spTransform(e, crs)
+
+mrob <- mask(r_robinson, re)
+```
+
+```{r}
+## manipulating data  -- robinson raster_df 
+ras_df_r <- as.data.frame(mrob, xy = TRUE) 
+```
+
+```{r}
+### RE CLASSIFY HYDE
+## edit 2/16/2024 -- all of the classifications other than the Forest Anthromes are NON-FOREST
+
+ras_df_r[ras_df_r$anthromes2023AD %in% c(11, 12, 21, 22, 23, 24, 31, 32, 33, 34, 41, 42, 43),]$anthromes2023AD <- "intensive"
+ras_df_r[ras_df_r$anthromes2023AD %in% c(51, 52, 53, 54),]$anthromes2023AD <- "cultured"
+ras_df_r[ras_df_r$anthromes2023AD %in% c(61, 62, 63),]$anthromes2023AD <- "wild"
+ras_df_r[ras_df_r$anthromes2023AD %in% c(70),]$anthromes2023AD <- NA
+
+### remove NAs
+ras_df_r <- ras_df_r[!is.na(ras_df_r$anthromes2023AD),]
+
+ras_df_r$anthromes2023AD <- factor(ras_df_r$anthromes2023AD, level = c("intensive", "cultured", "wild"))
+```
+
+```{r}
+library(sf)
+
+dunia = spData::world %>% 
+  st_as_sf()
+```
+
+
+```{r}
+gg.map_ForC <- ggplot() + geom_tile(aes(x = x, y = y, fill = as.factor(anthromes2023AD)),
+                                 data = ras_df_r) +
+          ggspatial::layer_spatial(fill = "transparent", data = dunia) +
+          coord_sf(crs = 'ESRI:54030') +
+          scale_fill_manual(values = c("#efcb68", "#70a0af", "#160c28"),
+                            #labels = c("intensive", "cultured", "wild"),
+                            name = "3-class Anthrome") +
+          cowplot::theme_cowplot() +
+          cowplot::theme_minimal_grid() +
+          ggspatial::geom_spatial_point(aes(x = lon, y = lat), data = biomass_df, shape = "+",  col = "#e83f6f99") +
+          metR::scale_x_longitude(breaks = seq(-180,180,60), name = "Longitude") + 
+          metR::scale_y_latitude(breaks = seq(-90,90,30), name = "Latitude") + theme(legend.position = "top")
+          #labs(x = "Longitude", y = "Latitude", caption = "source: HYDE 3.2")
+
+
+# tiff("Anthromes_Map_ForC_sites.tiff", width = 20, height = 12.5, units = "cm", res = 600, compression = "lzw")
+gg.map_ForC
+# dev.off()
+```
+
+```{r}
+tiff("Anthromes_Map_and_AGB_Stocks_ForC_sites_03.11.2024.tiff", width = 20, height = 24, units = "cm", res = 600, compression = "lzw")
+ggpubr::ggarrange(gg.map_ForC, 
+                  ggBox.biomass_ag_OM + stat_compare_means(method = "anova", label.y = 31 ) + stat_compare_means(comparisons = my_pairs, label = "p.signif", label.y = c(20, 23, 26)) + 
+                      scale_y_continuous(trans = 'sqrt', limits = c(-2,1000), breaks = c(0, 10, 50, 200, 500, 1000)),
+                  gg.anthrome_area2,
+                  nrow = 3, ncol = 1, labels = "AUTO", heights = c(1.2, 0.8, 0.6),common.legend = T)
+dev.off()
+```
+
+
+
+
+
+
+# statistics
+```{r}
+df <- ForC_merged[ForC_merged$variable.name == "biomass_ag_OM",]
+df$anthromes2023_3CL <- as.factor(df$anthromes2023_3CL)
+df$Global_classification <- as.factor(df$Global_classification)
+
+### remove -9999 (no anthrome data)
+df <- df[!df$anthromes2023_3CL == -9999,]
+```
+
+## run ANOVA
+```{r}
+mod1 <- aov(mean ~ anthromes2023_3CL * Global_classification, data = df)
+        
+summary(mod1)         
+```
+
+## effect sizes
+```{r}
+library(effectsize)
+options(es.use_symbols = TRUE) # get nice symbols when printing! (On Windows, requires R >= 4.2.0)
+
+eff1 <- eta_squared(mod1, partial = FALSE, alternative = "two.sided")
+
+print(eff1, digits = 4)
+```
+
+## Tukey HSD
+```{r}
+TukeyHSD(mod1, "Global_classification")
+```
+
+```{r}
+TukeyHSD(mod1, "anthromes2023_3CL" )
+```
+
+## pariwse comparisions (emmeans)
+```{r}
+# pairwise comparisons
+library(emmeans); library(dplyr); library(rstatix)
+
+pwc <- df %>% 
+  group_by(Global_classification) %>%
+  emmeans_test(mean ~ anthromes2023_3CL, p.adjust.method = "bonferroni") 
+pwc
+```
+
+```{r}
+model <- lm(mean ~ anthromes2023_3CL * Global_classification, data = df)
+df %>% 
+  emmeans_test(
+    mean ~ anthromes2023_3CL, p.adjust.method = "bonferroni",
+    model = model
+    )
+```
+```{r}
+df %>% 
+  emmeans_test(
+    mean ~ Global_classification, p.adjust.method = "bonferroni",
+    model = model
+    )
+```
+
+
+## pairwise comparisons (multcomp)
+### within tropical only
+
+```{r}
+library(multcomp)
+
+mod1a <- aov(mean ~ anthromes2023_3CL, data = df[df$Global_classification == "tropical",])
+tukey1 <- glht(mod1a, linfct = mcp(anthromes2023_3CL = "Tukey"))
+
+cld(tukey1)
+
+```
+
+### within temperate only
+```{r}
+mod1b <- aov(mean ~ anthromes2023_3CL, data = df[df$Global_classification == "temperate & boreal",])
+tukey2 <- glht(mod1b, linfct = mcp(anthromes2023_3CL = "Tukey"))
+
+cld(tukey2)
+```
+
+
+# Figure 4 Calculations  (not included in revised manuscript)
+
+## total ecosystem C stocks -- soil included
+```{r}
+Rmisc::summarySE(measurevar = "mean", groupvars = "Global_classification", ForC_merged[ForC_merged$variable.name == "total.ecosystem_C",])
+```
+
+## total aboveground biomass C stock
+```{r}
+Rmisc::summarySE(measurevar = "mean", groupvars = "Global_classification", ForC_merged[ForC_merged$variable.name == "biomass_ag_C",])
+```
+
+
+
+## Soil C stocks
+```{r}
+Rmisc::summarySE(measurevar = "mean", groupvars = "Global_classification", ForC_merged[ForC_merged$variable.name == "soil_C",])
+```
+```{r}
+Rmisc::summarySE(measurevar = "mean", groupvars = "Global_classification", ForC_merged[ForC_merged$variable.name == "delta.agb_C",])
+
+```
+

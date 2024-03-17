@@ -1,0 +1,1385 @@
+---
+title: "Anthromes_CarbonFeedbacks_and_CMIP_Climate.Rmd"
+author: "JAH"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+
+# Backgrouind 
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# libraries
+```{r}
+# https://rpubs.com/boyerag/297592
+
+library(ncdf4) # package for netcdf manipulation
+library(raster) # package for raster manipulation
+library(ggplot2); library(ggdist); library(ggpubr) # packages for plotting
+library(data.table)
+library(rstatix);  library(effectsize); library(multcomp)  # for stats
+library(collapse);  library(tidyverse) 
+```
+
+# Load in the Anthromes data and ForC points and do extraction of Anthromes Data
+```{r}
+# ## load in the 2023 Anthromes raster file
+anthromes_rast <- raster::raster("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/anthromes2023AD.asc")
+
+## crop to tropics
+e1 <- extent(-180, 180, -35, 35)
+anthromes_rast_tropics <- crop(anthromes_rast, e1)
+
+## crop to temperate 1
+e2 <- extent(-180, 180, 35, 90)
+anthromes_rast_north <- crop(anthromes_rast, e2)
+
+## crop to temperate 2
+e3 <- extent(-180, 180, -90, -35)
+anthromes_rast_south <- crop(anthromes_rast, e3)
+
+## read in the ForC coords from the biomass_df which re used for Fig 1
+# site data - with the site coordinates and other data
+biomass_df <- readRDS("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/Anth_R_omes/ForC_Biomass_df.Rds")
+
+## create spatial points object
+forC_coords_sp <- SpatialPoints(biomass_df[,c("lon","lat")])   # 7541 site coords 
+
+### subset to North, south and tropical --   for use later on
+## crop to tropics
+forC_coords_sp_tropics <- crop(forC_coords_sp, e1)
+
+## crop to temperate 1  (north)
+forC_coords_sp_north <- crop(forC_coords_sp, e2)
+
+## crop to temperate 2 (south)
+forC_coords_sp_south <- crop(forC_coords_sp, e3)
+########################################  --   for use later on
+
+#### extract -- 
+extr_anthromes_north <- raster::extract(anthromes_rast_north, forC_coords_sp_north, sp = T)
+extr_anthromes_tropics <- raster::extract(anthromes_rast_tropics, forC_coords_sp_tropics, sp = T)
+extr_anthromes_south <- raster::extract(anthromes_rast_south, forC_coords_sp_south, sp = T)
+
+## make as data frame
+extr_anthromes_df <- data.frame("global_region" = c(rep("temperate & boreal", length(extr_anthromes_north$anthromes2023AD)),
+                                                    rep("tropical", length(extr_anthromes_tropics$anthromes2023AD)), 
+                                                    rep("temperate & boreal", length(extr_anthromes_south$anthromes2023AD))), 
+                                "anthromes2023AD" = c(extr_anthromes_north$anthromes2023AD,
+                                                      extr_anthromes_tropics$anthromes2023AD,
+                                                      extr_anthromes_south$anthromes2023AD))
+
+```
+
+## reclassify Anthromes (6,5 & 3 CL)
+```{r}
+### RECLASSIFYING the HYDE 3.3 2023 Antrhomes map to 6, 5 and 3 Classificaitons -- see Ellis et al PNAS 2021
+# excel file = anthromes_12K_DGG_v1_map_legend_2021_04_01.xlsx
+#########################################################################
+
+################################
+# ANTHROMES 6 classes 
+################################
+extr_anthromes_df$anthromes2023_6CL <- -9999
+
+## ANTHROMES reclassification  6CL
+## make classifications 11 and 12 as dense settlements
+extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 11 ,]$anthromes2023_6CL <- "dense settlement"
+extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 12 ,]$anthromes2023_6CL <- "dense settlement"
+
+## classifications 21-24  are villages
+extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 21,]$anthromes2023_6CL <- "villages"
+extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 22,]$anthromes2023_6CL <- "villages"
+extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 23,]$anthromes2023_6CL <- "villages"
+extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 24,]$anthromes2023_6CL <- "villages"
+
+## classifications 31-34  are croplands
+extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 31,]$anthromes2023_6CL <- "croplands"
+extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 32,]$anthromes2023_6CL <- "croplands"
+extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 33,]$anthromes2023_6CL <- "croplands"
+extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 34,]$anthromes2023_6CL <- "croplands"
+
+## classifications 41-43 are rangelands
+extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 41,]$anthromes2023_6CL <- "rangelands"
+extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 42,]$anthromes2023_6CL <- "rangelands"
+extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 43,]$anthromes2023_6CL <- "rangelands"
+
+## classifications 51-54 are cultured
+extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 51,]$anthromes2023_6CL <- "cultured"
+extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 52,]$anthromes2023_6CL <- "cultured"
+extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 53,]$anthromes2023_6CL <- "cultured"
+extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 54,]$anthromes2023_6CL <- "cultured"
+
+## classifications 61-63 are wildlands
+extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 61,]$anthromes2023_6CL <- "wildlands"
+extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 62,]$anthromes2023_6CL <- "wildlands"
+# extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 63,]$anthromes2023_6CL <- "wildlands"
+
+
+################################
+# ANTHROMES 5 classes 
+################################
+
+extr_anthromes_df$anthromes2023_5CL <- -9999
+
+## ANTHROMES reclassification  6CL
+## make classifications 11 and 24 as SETTLED
+extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 11 ,]$anthromes2023_5CL <- "settled"
+extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 12 ,]$anthromes2023_5CL <- "settled"
+extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 21,]$anthromes2023_5CL <- "settled"
+extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 22,]$anthromes2023_5CL <- "settled"
+extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 23,]$anthromes2023_5CL <- "settled"
+extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 24,]$anthromes2023_5CL <- "settled"
+
+## classifications 31-34  are croplands
+extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 31,]$anthromes2023_5CL <- "croplands"
+extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 32,]$anthromes2023_5CL <- "croplands"
+extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 33,]$anthromes2023_5CL <- "croplands"
+extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 34,]$anthromes2023_5CL <- "croplands"
+
+## classifications 41-43 are rangelands
+extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 41,]$anthromes2023_5CL <- "rangelands"
+extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 42,]$anthromes2023_5CL <- "rangelands"
+extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 43,]$anthromes2023_5CL <- "rangelands"
+
+## classifications 51-54 are cultured
+extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 51,]$anthromes2023_5CL <- "cultured"
+extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 52,]$anthromes2023_5CL <- "cultured"
+extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 53,]$anthromes2023_5CL <- "cultured"
+extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 54,]$anthromes2023_5CL <- "cultured"
+
+## classifications 61-63 are wildlands
+extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 61,]$anthromes2023_5CL <- "wildlands"
+extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 62,]$anthromes2023_5CL <- "wildlands"
+# extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 63,]$anthromes2023_5CL <- "wildlands"
+
+################################
+# ANTHROMES 3 classes 
+################################
+extr_anthromes_df$anthromes2023_3CL <- -9999
+
+## ANTHROMES reclassification  6CL
+## make classifications 11 - 43 as intensive anthromes
+extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 11,]$anthromes2023_3CL <- "intensive"
+extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 12,]$anthromes2023_3CL <- "intensive"
+extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 21,]$anthromes2023_3CL <- "intensive"
+extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 22,]$anthromes2023_3CL <- "intensive"
+extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 23,]$anthromes2023_3CL <- "intensive"
+extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 24,]$anthromes2023_3CL <- "intensive"
+extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 31,]$anthromes2023_3CL <- "intensive"
+extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 32,]$anthromes2023_3CL <- "intensive"
+extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 33,]$anthromes2023_3CL <- "intensive"
+extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 34,]$anthromes2023_3CL <- "intensive"
+extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 41,]$anthromes2023_3CL <- "intensive"
+extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 42,]$anthromes2023_3CL <- "intensive"
+extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 43,]$anthromes2023_3CL <- "intensive"
+
+## classifications 51-54 are cultured
+extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 51,]$anthromes2023_3CL <- "cultured"
+extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 52,]$anthromes2023_3CL <- "cultured"
+extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 53,]$anthromes2023_3CL <- "cultured"
+extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 54,]$anthromes2023_3CL <- "cultured"
+
+## classifications 61-63 are wildlands
+extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 61,]$anthromes2023_3CL <- "wildlands"
+extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 62,]$anthromes2023_3CL <- "wildlands"
+# extr_anthromes_df[!is.na(extr_anthromes_df$anthromes2023AD) & extr_anthromes_df$anthromes2023AD == 63,]$anthromes2023_3CL <- "wildlands"
+```
+
+#  Load in Charlie Kovens Carbon feedback data 
+
+```{r}
+nc_data <- nc_open('C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/Charlie_Koven_Beta_Gamma/carbon_feedback_parameters.nc')
+# Save the print(nc) dump to a text file
+# {
+#     sink('carbon_feedback_parameters_metadata.txt')
+#  print(nc_data)
+#     sink()
+# }
+```
+
+```{r}
+lon <- ncvar_get(nc_data, "lon")
+lat <- ncvar_get(nc_data, "lat", verbose = F)
+# model <- ncvar_get(nc_data, "model")
+```
+
+## Beta Feedback
+```{r}
+### get Beta Ensemble mean CMIP6
+
+beta.array <- ncvar_get(nc_data, "beta_ensmean") # store the data in a 2-dimensional array
+dim(beta.array) 
+```
+```{r}
+### make rater -- BETA
+beta_rast <- raster(t(beta.array), xmn = min(lon), xmx = max(lon), ymn = min(lat), ymx = max(lat), crs = CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs+ towgs84=0,0,0"))
+
+## need to flip raster 
+beta_rast <- terra::flip(beta_rast, direction = "y")
+
+## crop to tropics
+e1 <- extent(-180, 180, -35, 35)
+beta_rast_tropical <- crop(beta_rast, e1)
+
+## crop to temperate 1
+e2 <- extent(-180, 180, 35, 90)
+beta_rast_north <- crop(beta_rast, e2)
+
+## crop to temperate 2
+e3 <- extent(-180, 180, -90, -35)
+beta_rast_south <- crop(beta_rast, e3)
+
+## plotting
+plot(beta_rast); plot(beta_rast_tropical); plot(beta_rast_north); plot(beta_rast_south)
+
+rm(beta_rast)  # remove original raster to save space
+```
+### extract Beta Feedback for ForC sites
+
+```{r}
+### extract data - beta feedback 
+beta_data_tropical <- raster::extract(beta_rast_tropical, forC_coords_sp_tropics, sp = T)  
+beta_data_north <- raster::extract(beta_rast_north, forC_coords_sp_north, sp = T)  
+beta_data_south <- raster::extract(beta_rast_south, forC_coords_sp_south, sp = T)  
+```
+
+```{r}
+beta_feedback <- data.frame("global_region" = c(rep("temperate & boreal", length(beta_data_north$layer)), 
+                                           rep("tropical", length(beta_data_tropical$layer)), 
+                                           rep("temperate & boreal", length(beta_data_south$layer))),
+                             "beta" = c(beta_data_north$layer, beta_data_tropical$layer, beta_data_south$layer))
+
+### add column to data for the Anthromes class 
+beta_feedback$anthromes2023_3CL <- extr_anthromes_df$anthromes2023_3CL
+beta_feedback$anthromes2023_3CL <- factor(beta_feedback$anthromes2023_3CL, levels = c("intensive", "cultured", "wildlands"))
+beta_feedback$site.id <- extr_anthromes_df$site.id
+
+## add coordindates
+beta_feedback <- cbind(beta_feedback, rbind(forC_coords_sp_north@coords, forC_coords_sp_tropics@coords, forC_coords_sp_south@coords))
+
+### TAKE OUT -9999 ANTHROMES
+beta_feedback <- beta_feedback[!beta_feedback$anthromes2023_3CL == -9999,]
+```
+
+```{r}
+## save result
+saveRDS(beta_feedback, file = "beta_feedback_data_Anthromes_3CL.Rds")
+write.csv(beta_feedback, file = "beta_feedback_data_Anthromes_3CL.csv")
+```
+
+
+
+## Gamma Feedback
+```{r}
+### get Gamma Ensemble mean CMIP6
+gamma.array <- ncvar_get(nc_data, "gamma_ensmean") # store the data in a 2-dimensional array
+dim(gamma.array) 
+```
+
+```{r}
+## make raster  -- GAMMA
+gamma_rast <- raster(t(gamma.array), xmn = min(lon), xmx = max(lon), ymn = min(lat), ymx = max(lat), crs = CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs+ towgs84=0,0,0"))
+
+## need to flip raster 
+gamma_rast <- terra::flip(gamma_rast, direction = "y")
+
+## crop to tropics
+gamma_rast_tropical <- crop(gamma_rast, e1)
+
+## crop to temperate 1 (NORTH)
+gamma_rast_north <- crop(gamma_rast, e2)
+
+## crop to temperate 2  (SOUTH)
+gamma_rast_south <- crop(gamma_rast, e3)
+
+## plotting
+plot(gamma_rast); plot(gamma_rast_tropical); plot(gamma_rast_north); plot(gamma_rast_south)
+```
+
+### extract Gamma Feedback for ForC sites
+
+```{r}
+### exract data - gamma feedback 
+gamma_data_tropical <- raster::extract(gamma_rast_tropical, forC_coords_sp_tropics, sp = T)  
+gamma_data_north <- raster::extract(gamma_rast_north, forC_coords_sp_north, sp = T)  
+gamma_data_south <- raster::extract(gamma_rast_south, forC_coords_sp_south, sp = T)  
+```
+
+```{r}
+gamma_feedback <- data.frame("global_region" = c(rep("temperate & boreal", length(gamma_data_north$layer)), 
+                                           rep("tropical", length(gamma_data_tropical$layer)), 
+                                           rep("temperate & boreal", length(gamma_data_south$layer))),
+                             "gamma" = c(gamma_data_north$layer, gamma_data_tropical$layer, gamma_data_south$layer))
+
+### add column to data for the Anthromes class 
+gamma_feedback$anthromes2023_3CL <- extr_anthromes_df$anthromes2023_3CL
+gamma_feedback$anthromes2023_3CL <- factor(gamma_feedback$anthromes2023_3CL, levels = c("intensive", "cultured", "wildlands"))
+
+gamma_feedback$site.id <- extr_anthromes_df$site.id
+
+## add coordindates
+gamma_feedback <- cbind(gamma_feedback, rbind(forC_coords_sp_north@coords, forC_coords_sp_tropics@coords, forC_coords_sp_south@coords))
+
+### TAKE OUT -9999 ANTHROMES
+gamma_feedback <- gamma_feedback[!gamma_feedback$anthromes2023_3CL == -9999,]
+```
+
+```{r}
+## save result
+saveRDS(gamma_feedback, file = "gamma_feedback_data_Anthromes_3CL.Rds")
+write.csv(gamma_feedback, file = "gamma_feedback_data_Anthromes_3CL.csv")
+```
+
+
+# make some plots
+## beta
+```{r}
+gg.beta <- ggplot(aes(x = anthromes2023_3CL, y = beta), data = beta_feedback) + 
+            geom_point(position = "jitter") + facet_wrap(vars(global_region)) + theme_classic() 
+            
+
+gg.beta
+```
+
+## gamma
+```{r}
+gg.gamma <- ggplot(aes(x = anthromes2023_3CL, y = gamma), data = gamma_feedback) + 
+            geom_point(position = "jitter") + facet_wrap(vars(global_region)) + theme_classic() 
+            
+
+gg.gamma
+```
+
+```{r}
+gg.betaBox <- ggpubr::ggboxplot(data =  beta_feedback,
+                                 x = "anthromes2023_3CL", y = "beta", color = "anthromes2023_3CL", 
+                                 palette = c("#efcb68", "#70a0af", "#160c28"), add.params = list(alpha = 0.3, shape = "."),
+                                 add = "jitter", facet.by = "global_region",  legend = "none") +
+                                 labs(x = "3-class Anthrome", y = expression(italic(beta)~"  (Kg C m"^-2*" CO"[2]^-1*")")) 
+              # geom_hline(yintercept = 0, lty = 3, col = "gray") +
+              # geom_hline(yintercept = 1, lty = 3, col = "gray") +
+              # geom_hline(yintercept = 2, lty = 3, col = "gray") +
+              # geom_hline(yintercept = 3, lty = 3, col = "gray")
+
+my_pairs <- list(c("intensive", "cultured"), c("cultured", "wildlands"), c("intensive", "wildlands"))
+
+
+gg.betaBox + stat_compare_means(method = "anova",label.y = 0.025) + 
+             stat_compare_means(comparisons = my_pairs, label = "p.signif",label.y = c(0.017, 0.019, 0.021))
+
+```
+
+```{r}
+gg.gammaBox <- ggpubr::ggboxplot(data =  gamma_feedback,
+                                 x = "anthromes2023_3CL", y = "gamma", color = "anthromes2023_3CL", 
+                                 palette = c("#efcb68", "#70a0af", "#160c28"), add.params = list(alpha = 0.3, shape = "."),
+                                 add = "jitter", facet.by = "global_region",  legend = "none") +
+                                 labs(x = "3-class Anthrome", y = expression(italic(gamma)~"  (Kg C m"^-2*~degree*"C"^-1*")")) #+ 
+              # geom_hline(yintercept = 4, lty = 3, col = "gray") + 
+              # geom_hline(yintercept = 2, lty = 3, col = "gray") + 
+              # geom_hline(yintercept = 0, lty = 3, col = "gray") + 
+              # geom_hline(yintercept = -2, lty = 3, col = "gray") + 
+              # geom_hline(yintercept = -4, lty = 3, col = "gray") 
+
+
+my_pairs <- list(c("intensive", "cultured"), c("cultured", "wildlands"), c("intensive", "wildlands"))
+
+
+gg.gammaBox + stat_compare_means(method = "anova", label.y = 1) + 
+              stat_compare_means(comparisons = my_pairs, label = "p.signif", label.y = c(0.1, 0.3, 0.5))
+```
+
+```{r}
+tiff(filename = "Feedback_boxplots.tiff", width = 18, height = 17, res = 600, compression = "lzw", units = "cm")
+
+## plot together
+ggpubr::ggarrange(
+  
+  gg.betaBox + stat_compare_means(method = "anova",label.y = 0.025) + 
+               stat_compare_means(comparisons = my_pairs, label = "p.signif",label.y = c(0.017, 0.019, 0.021)) + 
+               theme(axis.text.x = element_blank(), 
+                     axis.title.x = element_blank(), 
+                     plot.margin = unit(c(5.5,5.5,0,5.5), "pt")),
+  
+  gg.gammaBox + stat_compare_means(method = "anova", label.y = 1) + 
+                stat_compare_means(comparisons = my_pairs, label = "p.signif", label.y = c(0.0, 0.3, 0.6)) +
+                theme(plot.margin = unit(c(0,5.5,1.5,5.5), "pt")), 
+  
+  ncol = 1, nrow = 2, align = "hv", heights = c(1,1.025), labels = "AUTO"
+  
+)
+
+dev.off()
+
+```
+
+
+# compute summary stats
+```{r}
+Rmisc::summarySE(data = beta_feedback, measurevar = "beta", groupvars = c("anthromes2023_3CL", "global_region"), na.rm = T)
+```
+
+```{r}
+Rmisc::summarySE(data = gamma_feedback, measurevar = "gamma", groupvars = c("anthromes2023_3CL", "global_region"), na.rm = T)
+```
+
+
+# Histograms
+
+## beta
+
+```{r}
+par(mfcol = c(1,2))
+hist(beta_feedback[beta_feedback$global_region == "temperate & boreal",]$beta, 
+     main = "temperate & boreal", xlab = expression(italic(beta)~"  (Kg C m"^-2*" CO"[2]^-1*")"))
+hist(beta_feedback[beta_feedback$global_region == "tropical",]$beta, 
+     main = "tropical", xlab = expression(italic(beta)~"  (Kg C m"^-2*" CO"[2]^-1*")"))
+```
+
+```{r}
+par(mfcol = c(1,3))
+hist(beta_feedback[beta_feedback$anthromes2023_3CL == "intensive",]$beta, main = "intensive", xlab = expression(italic(beta)~"  (Kg C m"^-2*" CO"[2]^-1*")"))
+hist(beta_feedback[beta_feedback$anthromes2023_3CL == "cultured",]$beta, main = "cultured", xlab = expression(italic(beta)~"  (Kg C m"^-2*" CO"[2]^-1*")"))
+hist(beta_feedback[beta_feedback$anthromes2023_3CL == "wildlands",]$beta, main = "wildlands", xlab = expression(italic(beta)~"  (Kg C m"^-2*" CO"[2]^-1*")"))
+```
+
+```{r}
+par(mfrow = c(2,3))
+
+
+hist(beta_feedback[beta_feedback$anthromes2023_3CL == "intensive" & beta_feedback$global_region == "temperate & boreal",]$beta, 
+     main = "temperate & boreal - intensive", xlab = expression(italic(beta)~"  (Kg C m"^-2*" CO"[2]^-1*")"))
+
+hist(beta_feedback[beta_feedback$anthromes2023_3CL == "cultured" & beta_feedback$global_region == "temperate & boreal",]$beta, main = "temperate & boreal - cultured", xlab = expression(italic(beta)~"  (Kg C m"^-2*" CO"[2]^-1*")"))
+
+hist(beta_feedback[beta_feedback$anthromes2023_3CL == "wildlands" & beta_feedback$global_region == "temperate & boreal",]$beta, main = "temperate & boreal - wildlands", xlab = expression(italic(beta)~"  (Kg C m"^-2*" CO"[2]^-1*")"))
+
+
+hist(beta_feedback[beta_feedback$anthromes2023_3CL == "intensive" & beta_feedback$global_region == "tropical",]$beta, 
+     main = "tropical - intensive", xlab = expression(italic(beta)~"  (Kg C m"^-2*" CO"[2]^-1*")"))
+
+hist(beta_feedback[beta_feedback$anthromes2023_3CL == "cultured" & beta_feedback$global_region == "tropical",]$beta, main = "tropical - cultured", xlab = expression(italic(beta)~"  (Kg C m"^-2*" CO"[2]^-1*")"))
+
+hist(beta_feedback[beta_feedback$anthromes2023_3CL == "wildlands" & beta_feedback$global_region == "tropical",]$beta, main = "tropical - wildlands", xlab = expression(italic(beta)~"  (Kg C m"^-2*" CO"[2]^-1*")"))
+```
+
+## gamma
+
+```{r}
+par(mfcol = c(1,2))
+hist(gamma_feedback[gamma_feedback$global_region == "temperate & boreal",]$gamma, 
+     main = "temperate & boreal", xlab = expression(italic(gamma)~"  (Kg C m"^-2*~degree*"C"^-1*")"))
+hist(gamma_feedback[gamma_feedback$global_region == "tropical",]$gamma, main = "tropical", 
+     xlab = expression(italic(gamma)~"  (Kg C m"^-2*~degree*"C"^-1*")"))
+```
+
+```{r}
+par(mfcol = c(1,3))
+hist(gamma_feedback[gamma_feedback$anthromes2023_3CL == "intensive",]$gamma, 
+     main = "intensive", xlab = expression(italic(gamma)~"  (Kg C m"^-2*~degree*"C"^-1*")"))
+hist(gamma_feedback[gamma_feedback$anthromes2023_3CL == "cultured",]$gamma, 
+     main = "cultured", xlab = expression(italic(gamma)~"  (Kg C m"^-2*~degree*"C"^-1*")"))
+hist(gamma_feedback[gamma_feedback$anthromes2023_3CL == "wildlands",]$gamma, 
+     main = "wildlands", xlab = expression(italic(gamma)~"  (Kg C m"^-2*~degree*"C"^-1*")"))
+```
+
+```{r}
+par(mfrow = c(2,3))
+
+
+hist(gamma_feedback[gamma_feedback$anthromes2023_3CL == "intensive" & gamma_feedback$global_region == "temperate & boreal",]$gamma, 
+     main = "temperate & boreal - intensive", xlab = expression(italic(gamma)~"  (Kg C m"^-2*~degree*"C"^-1*")"))
+
+hist(gamma_feedback[gamma_feedback$anthromes2023_3CL == "wildlands" & gamma_feedback$global_region == "temperate & boreal",]$gamma,
+     main = "temperate & boreal - wildlands", xlab = expression(italic(gamma)~"  (Kg C m"^-2*~degree*"C"^-1*")"))
+
+hist(gamma_feedback[gamma_feedback$anthromes2023_3CL == "cultured" & gamma_feedback$global_region == "temperate & boreal",]$gamma, 
+     main = "temperate & boreal - cultured", xlab = expression(italic(gamma)~"  (Kg C m"^-2*~degree*"C"^-1*")"))
+
+
+hist(gamma_feedback[gamma_feedback$anthromes2023_3CL == "intensive" & gamma_feedback$global_region == "tropical",]$gamma, 
+     main = "tropical - intensive", xlab = expression(italic(gamma)~"  (Kg C m"^-2*~degree*"C"^-1*")"))
+
+hist(gamma_feedback[gamma_feedback$anthromes2023_3CL == "cultured" & gamma_feedback$global_region == "tropical",]$gamma, 
+     main = "tropical - cultured", xlab = expression(italic(gamma)~"  (Kg C m"^-2*~degree*"C"^-1*")"))
+
+hist(gamma_feedback[gamma_feedback$anthromes2023_3CL == "wildlands" & gamma_feedback$global_region == "tropical",]$gamma, 
+     main = "tropical - wildlands", xlab = expression(italic(gamma)~"  (Kg C m"^-2*~degree*"C"^-1*")"))
+
+
+```
+
+
+# ANOVAS
+```{r}
+## need as factors 
+beta_feedback$anthromes2023_3CL <- as.factor(beta_feedback$anthromes2023_3CL)
+gamma_feedback$anthromes2023_3CL <- as.factor(gamma_feedback$anthromes2023_3CL)
+```
+
+
+## beta feedback - all data
+```{r}
+anova1 <- aov(beta ~  anthromes2023_3CL * global_region, data = beta_feedback)
+summary(anova1)
+```
+## beta feedback - temperate & boreal
+```{r}
+mod1a <- aov(beta ~ anthromes2023_3CL, data = beta_feedback[beta_feedback$global_region == "temperate & boreal",])
+tukey1a <- glht(mod1a, linfct = mcp(anthromes2023_3CL = "Tukey"))
+
+cld(tukey1a)
+```
+## beta feedback - tropical
+```{r}
+beta_feedback$anthromes2023_3CL <- as.factor(beta_feedback$anthromes2023_3CL)
+
+mod1b <- aov(beta ~ anthromes2023_3CL, data = beta_feedback[beta_feedback$global_region == "tropical",])
+tukey1b <- glht(mod1b, linfct = mcp(anthromes2023_3CL = "Tukey"))
+
+cld(tukey1b)
+```
+## gamma feedback - all data
+```{r}
+anova2 <- aov(gamma ~ anthromes2023_3CL * global_region, data = gamma_feedback)
+
+summary(anova2)
+```
+## beta feedback - temperate & boreal
+```{r}
+mod2a <- aov(gamma ~ anthromes2023_3CL, data = gamma_feedback[gamma_feedback$global_region == "temperate & boreal",])
+tukey2a <- glht(mod1b, linfct = mcp(anthromes2023_3CL = "Tukey"))
+
+cld(tukey2a)
+```
+
+## beta feedback - tropical
+```{r}
+mod2b <- aov(gamma ~ anthromes2023_3CL, data = gamma_feedback[gamma_feedback$global_region == "tropical",])
+tukey2b <- glht(mod1b, linfct = mcp(anthromes2023_3CL = "Tukey"))
+
+cld(tukey2b)
+```
+
+
+# Effect sizes 
+## beta
+```{r}
+
+options(es.use_symbols = TRUE) # get nice symbols when printing! (On Windows, requires R >= 4.2.0)
+
+eff_anova1 <- eta_squared(anova1, partial = FALSE, alternative = "two.sided")
+
+print(eff_anova1, digits = 4)
+```
+## gamma
+```{r}
+eff_anova2 <- eta_squared(anova2, partial = FALSE, alternative = "two.sided")
+
+print(eff_anova2, digits = 4)
+```
+## plotting
+```{r}
+effSize_df <- rbind(as.data.frame(eff_anova1), as.data.frame(eff_anova2))
+effSize_df$feedback = c(rep("Beta", 3), rep("Gamma", 3))
+
+### need to fix the CI LOW for 2 global region eta2 estimates
+effSize_df[effSize_df$Parameter == "global_region",]$CI_low <-  effSize_df[effSize_df$Parameter == "global_region",]$Eta2 - (effSize_df[effSize_df$Parameter == "global_region",]$CI_high - effSize_df[effSize_df$Parameter == "global_region",]$Eta2)
+```
+
+
+```{r}
+gg.feedbacks <- ggplot(aes(x = Parameter, y = Eta2, color = feedback, shape = feedback), data = effSize_df) + 
+                geom_hline(yintercept = 0, lty = 3, col = "gray") + 
+                geom_hline(yintercept = 0.1, lty = 3, col = "gray") + 
+                geom_hline(yintercept = 0.2, lty = 3, col = "gray") + 
+                geom_hline(yintercept = 0.3, lty = 3, col = "gray") + 
+                geom_hline(yintercept = 0.4, lty = 3, col = "gray") + 
+                geom_point(position = position_dodge(0.9)) + 
+                geom_errorbar(aes(ymin = CI_low, ymax = CI_high), position = position_dodge(0.9)) +
+                theme_classic() + scale_x_discrete(labels = c('3-class Anthrome', 'global region', 'interaction')) + 
+                scale_color_manual(values = c("black", "gray50"), name = NULL, labels = c(expression(italic(beta)), expression(italic(gamma)))) +
+                scale_shape_manual(values = c(19,17), name = NULL, labels = c(expression(italic(beta)), expression(italic(gamma)))) +
+                ylab(expression(eta^2)) + theme(legend.position = c(0.1, 0.85),
+                                                axis.title.x = element_blank()) +
+                guides(color = guide_legend(override.aes = list(shape = c(19,17))))
+
+tiff(filename = "effect_sizes-Feedbacks.tiff", width = 9, height = 5.55, units = "cm", res = 600, compression = "lzw", re = 600)
+gg.feedbacks
+dev.off()
+```
+
+# Translating C-feedback to calculations of the Carbon stock sensitivity to global change - CO2 and warming effects
+```{r}
+### read in the historical TEMP and CO2 data
+## The temp data are from Berkley Earth lab -  Global (gridded) Monthly average temperature 1850-Recent  https://berkeleyearth.org/data/
+
+## the CO2 data are a combo of Mauna Loa and South Pole concentration measurements and ice core records: https://gml.noaa.gov/ccgg/trends/
+# Joos, F. & Spahni, R., (2008). Rates of change in natural and anthropogenic radiative forcing over the past 20,000 years, PNAS, 105 (5) 1425-1430. https://www.pnas.org/content/105/5/1425
+
+co2_t <- read.csv("C:/Users/JamesHogan/OneDrive - USDA/CO2 and T change dataset.csv")
+```
+
+
+## make a few plots
+```{r}
+gg.TRENDYCO2 <-  ggplot(aes(x = Year, y = TRENDY_annCO2), data = co2_t) + geom_point(size = 0.5) + geom_line() + theme_classic() + 
+                 ylab(expression('average CO'[2]*'  (ppm)')) + annotate(geom = "text", x = 1915, y = 405, label = expression(Delta*"CO"[2~"(1900-2021)"]*" = 117.7 ppm"))
+
+gg.TRENDYCO2
+```
+
+
+```{r}
+gg.berkleyT <-  ggplot(aes(x = Year, y = Berkeley_LandTemp_degC), data = co2_t) + geom_point(size = 0.5) + geom_line(lty = 3) + 
+                geom_smooth(method = "lm", col = "darkgray") +
+                geom_linerange(aes(ymin = Berkeley_LandTemp_degC_lower, ymax = Berkeley_LandTemp_degC_upper)) + theme_classic() + 
+                ylab('average land T (°C)') + annotate(geom = "text", x = 1915, y = 15, label = expression(Delta*"T"["(1900-2021)"]*" = 1.018"*degree*"C"))
+
+gg.berkleyT 
+```
+
+
+```{r}
+tiff(filename = "CO2_and_T.tiff", width = 19, height = 12, units = "cm", res = 600, compression = "lzw")
+ggpubr::ggarrange(gg.TRENDYCO2 + theme(axis.title.x = element_blank()), gg.berkleyT, labels = "AUTO", ncol = 1, nrow = 2, align = "v")
+dev.off()
+```
+
+## calculations
+```{r}
+## load datasets
+# beta_feedback <- readRDS("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/Anth_R_omes/beta_feedback.Rds")
+# gamma_feedback <- readRDS("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/Anth_R_omes/gamma_feedback.Rds")
+```
+### beta
+```{r}
+## The beta feedback is in kg C / m^2 / ppm CO2
+## so to get the carbon flux you multiply the beta by the delta CO2 (1900 to 2021)
+dCO2 <- co2_t[co2_t$Year == 2021,]$TRENDY_annCO2 - co2_t[co2_t$Year == 1900,]$TRENDY_annCO2   ## dCo2 = 117.7 ppm 
+
+## compute the C flux
+beta_feedback$C_flux_Mg_ha <- beta_feedback$beta * dCO2 * 10 ### multiply by 10 to get units from kg / m^2 to Mg / ha. 
+```
+
+### gamma
+```{r}
+## The gamma  feedback is in kg C / m^2 / degrees C
+## so to get the carbon flux you multiply the gamma value  by the delta T (Berkley Earth Land Temp) (1900 to 2021)
+dTemp <- co2_t[co2_t$Year == 2021,]$Berkeley_LandTemp_degC - co2_t[co2_t$Year == 1900,]$Berkeley_LandTemp_degC  #  1.018 deg C
+
+gamma_feedback$C_flux_Mg_ha <- gamma_feedback$gamma * dTemp * 10 ### multiply by 10 to get units from kg / m^2 to Mg / ha. 
+```
+
+```{r}
+summary_gamma <- Rmisc::summarySE(gamma_feedback, measurevar = "C_flux_Mg_ha", groupvars = c("global_region", "anthromes2023_3CL"), na.rm = T)
+
+summary_gamma$anthromes2023_3CL <- factor(summary_gamma$anthromes2023_3CL, levels = c("intensive", "cultured", "wildlands"))
+
+
+summary_gamma
+```
+
+
+
+```{r}
+summary_beta <- Rmisc::summarySE(beta_feedback, measurevar = "C_flux_Mg_ha", groupvars = c("global_region", "anthromes2023_3CL"), na.rm = T)
+
+summary_beta
+```
+
+## make some plots -- Carbon flux in Megagrams
+
+### beta
+```{r}
+gg.Cflux_beta <- ggpubr::ggboxplot(data =  beta_feedback,
+                                   x = "anthromes2023_3CL", y = "C_flux_Mg_ha", color = "anthromes2023_3CL", 
+                                   palette = c("#efcb68", "#70a0af", "#160c28"), add.params = list(alpha = 0.3, shape = "."),
+                                   add = "jitter", facet.by = "global_region",  legend = "none") +
+                                   labs(x = "3-class Anthrome", y = expression(Delta*'C (Mg ha'^-1*') due to '*Delta*'CO'[2])) #+
+              # geom_hline(yintercept = 0, lty = 3, col = "gray") +
+              # geom_hline(yintercept = 1, lty = 3, col = "gray") +
+              # geom_hline(yintercept = 2, lty = 3, col = "gray") +
+              # geom_hline(yintercept = 3, lty = 3, col = "gray")
+
+my_pairs <- list(c("intensive", "cultured"), c("cultured", "wildlands"), c("intensive", "wildlands"))
+
+# 
+gg.Cflux_beta <- gg.Cflux_beta + stat_compare_means(method = "anova", label.y = -5) + stat_compare_means(comparisons = my_pairs, label = "p.signif")
+
+gg.Cflux_beta 
+```
+
+### gamma
+```{r}
+gg.Cflux_gamma <- ggpubr::ggboxplot(data = gamma_feedback,
+                                   x = "anthromes2023_3CL", y = "C_flux_Mg_ha", color = "anthromes2023_3CL", 
+                                   palette = c("#efcb68", "#70a0af", "#160c28"), add.params = list(alpha = 0.3, shape = "."),
+                                   add = "jitter", facet.by = "global_region",  legend = "none") +
+                                   labs(x = "3-class Anthrome", y = expression(Delta*'C (Mg ha'^-1*') due to '*Delta*'T')) #+
+              # geom_hline(yintercept = 0, lty = 3, col = "gray") +
+              # geom_hline(yintercept = 1, lty = 3, col = "gray") +
+              # geom_hline(yintercept = 2, lty = 3, col = "gray") +
+              # geom_hline(yintercept = 3, lty = 3, col = "gray")
+
+my_pairs <- list(c("intensive", "cultured"), c("cultured", "wildlands"), c("intensive", "wildlands"))
+
+
+gg.Cflux_gamma <- gg.Cflux_gamma  + stat_compare_means(method = "anova", label.y = 18) + stat_compare_means(comparisons = my_pairs, label = "p.signif", label.y = c(5,8,11))
+
+gg.Cflux_gamma
+```
+
+### plot together
+```{r}
+### tiff
+
+tiff(filename = "Anthromes_C_flux_Mg_ha.tiff", width = 19, height = 16, units = "cm", res = 600, compression = "lzw" )
+
+ggpubr::ggarrange(
+  gg.Cflux_gamma + theme(axis.title.x = element_blank(), axis.text.x = element_blank()),
+  gg.Cflux_beta,
+  nrow = 2, ncol = 1, labels = "AUTO", align = "v", heights = c(1,1.125))
+
+dev.off()
+
+```
+
+
+
+## make some plots -- C flux in kg m^2
+
+### beta
+```{r}
+gg.Cflux_beta2 <- ggplot(aes(x = anthromes2023_3CL, y = C_flux_Mg_ha, color = anthromes2023_3CL, fill = anthromes2023_3CL), 
+                         data =  beta_feedback) + 
+                  geom_hline(yintercept = 0, lty = 3, col = "black") +
+                       geom_hline(yintercept = 10, lty = 3, col = "gray") +
+                  geom_hline(yintercept = 20, lty = 3, col = "gray") + 
+                   # add half-violin from {ggdist} package
+                  stat_halfeye(
+                    # adjust bandwidth
+                    adjust = 5,
+                    # move to the right
+                    justification = -0.2,
+                    # remove the slub interval
+                    .width = 0,
+                    point_colour = NA
+                  ) +
+                  geom_boxplot(
+                    width = 0.12,
+                    # removing outliers
+                    outlier.color = NA,
+                    alpha = 0.5
+                  ) +
+                  # stat_dots(shape = ".",
+                  #   # ploting on left side
+                  #   side = "left",
+                  #   # adjusting position
+                  #   justification = 1.1,
+                  #   # adjust grouping (binning) of observations
+                  #   binwidth = 0.5, layout = "swarm"
+                  # ) +
+                  scale_color_manual(values = c("#efcb68", "#70a0af", "#160c28")) +
+                  scale_fill_manual(values = c("#efcb68", "#70a0af", "#160c28")) +
+                  facet_wrap(vars(global_region)) + 
+                  theme_classic() + 
+                  labs(x = "3-class Anthrome", y = expression(Delta*'C (Mg ha'^-1*') due to '*Delta*'CO'[2]*" (1900-2021)")) +                   theme(legend.position = "none") + coord_flip()
+
+
+gg.Cflux_beta2 
+```
+
+### gamma
+```{r}
+gg.Cflux_gamma2 <- ggplot(aes(x = anthromes2023_3CL, y = C_flux_Mg_ha, 
+                              color = anthromes2023_3CL, fill = anthromes2023_3CL),  
+                          data = gamma_feedback) + 
+                   geom_hline(yintercept = 10, lty = 3, col = "gray") +
+                   geom_hline(yintercept = 0, lty = 3, col = "black") +
+                   geom_hline(yintercept = -10, lty = 3, col = "gray") +
+                   geom_hline(yintercept = -20, lty = 3, col = "gray") +
+                   stat_halfeye(
+                    # adjust bandwidth
+                    adjust = 2.5,
+                    # move to the right
+                    justification = -0.2,
+                    # remove the slub interval
+                    .width = 0,
+                    point_colour = NA
+                  ) +
+                  geom_boxplot(
+                    width = 0.12,
+                    # removing outliers
+                    outlier.color = NA,
+                    alpha = 0.5
+                  ) +
+                   scale_color_manual(values = c("#efcb68", "#70a0af", "#160c28")) + 
+                   scale_fill_manual(values = c("#efcb68", "#70a0af", "#160c28")) +
+                   facet_wrap(vars(global_region)) + 
+                   labs(x = "Woodland Anthrome", 
+                        y = expression(Delta*'C (Mg ha'^-1*') due to '*Delta*'Temperature (1900-2021)')) +
+                   theme_classic() + theme(legend.position = "none") + coord_flip()
+              
+
+
+gg.Cflux_gamma2 
+```
+
+### plot together
+```{r}
+### tiff
+
+tiff(filename = "Anthromes_C_flux_Mg_ha_V2.tiff", width = 12, height = 12, units = "cm", res = 600, compression = "lzw" )
+
+ggpubr::ggarrange(
+  gg.Cflux_beta2 + theme(axis.title.y = element_blank()),
+  gg.Cflux_gamma2 + theme(axis.title.y = element_blank()),
+  nrow = 2, ncol = 1, labels = "AUTO", align = "v")
+
+dev.off()
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# CMIP6 PRECIP
+```{r}
+### loading data
+f_name <- 'C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/CMIP6/adaptor.esgf_wps.retrieve-1709119139.206054-29863-11-f7d086d5-0e1d-40db-8e06-d6769c6661e4_precip/pr_Amon_GFDL-ESM4_historical_r1i1p1f1_gr1_18500116-20141216_v20190726.nc'
+# 
+cmip6_precip <- brick(f_name, varname = "pr")
+```
+
+```{r}
+## crop to tropics
+precip_tropical <- crop(cmip6_precip, e1)
+
+## crop to temperate 1
+precip_north <- crop(cmip6_precip, e2)
+
+## crop to temperate 2
+precip_south <- crop(cmip6_precip, e3)
+```
+
+## extract data
+```{r}
+### exract data - gamma feedback
+precip_data_tropics <- raster::extract(precip_tropical, forC_coords_sp_tropics, sp = T)
+precip_data_north <- raster::extract(precip_north, forC_coords_sp_north, sp = T)
+precip_data_south <- raster::extract(precip_south, forC_coords_sp_south, sp = T)
+```
+
+# CMIP6 SURFACE TEMP
+```{r}
+### loading data
+f_name2 <- 'C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/CMIP6/adaptor.esgf_wps.retrieve-1709405648.780676-9335-17-31c7ec7d-58d0-4e21-96d8-5a30df376617_surfaceTemp/ts_Amon_GFDL-ESM4_historical_r1i1p1f1_gr1_18500116-20141216_v20190726.nc'
+
+cmip6_temp <- brick(f_name2, varname = "ts")
+```
+
+```{r}
+## crop to tropics
+temp_tropics <- crop(cmip6_temp, e1)
+
+## crop to temperate 1
+temp_north <- crop(cmip6_temp, e2)
+
+## crop to temperate 2
+temp_south <- crop(cmip6_temp, e3)
+```
+
+
+```{r}
+### exract data - gamma feedback
+temp_data_tropics <- raster::extract(temp_tropics, forC_coords_sp_tropics, sp = T)
+temp_data_north <- raster::extract(temp_north, forC_coords_sp_north, sp = T)
+temp_data_south <- raster::extract(temp_south, forC_coords_sp_south, sp = T)
+```
+
+
+
+## data munging
+### precipitation
+
+```{r}
+precip_data_north <- as.data.table(precip_data_north)
+precip_data_south <- as.data.table(precip_data_south)
+precip_data_tropics <- as.data.table(precip_data_tropics)
+```
+
+```{r}
+precip_data <- rbind(precip_data_north, precip_data_tropics, precip_data_south)
+
+precip_data$global_region <- c(rep("temperate & boreal", dim(precip_data_north)[1]), 
+                               rep("tropical", dim(precip_data_tropics)[1]), 
+                               rep("temperate & boreal", dim(precip_data_south)[1]))
+
+precip_data$anthromes2023_3CL <- extr_anthromes_df$anthromes2023_3CL
+```
+
+```{r}
+saveRDS(precip_data, file = "CMIP6_precip_data_processed.Rds")
+```
+
+
+### temperature
+```{r}
+temp_data_north <- as.data.table(temp_data_north)
+temp_data_south <- as.data.table(temp_data_south)
+temp_data_tropics <- as.data.table(temp_data_tropics)
+```
+
+```{r}
+temp_data <- rbind(temp_data_north, temp_data_tropics, temp_data_south)
+
+temp_data$global_region <- c(rep("temperate & boreal", dim(temp_data_north)[1]), 
+                             rep("tropical", dim(temp_data_tropics)[1]), 
+                             rep("temperate & boreal", dim(temp_data_south)[1]))
+
+temp_data$anthromes2023_3CL <- extr_anthromes_df$anthromes2023_3CL
+```
+
+```{r}
+saveRDS(temp_data, file = "CMIP6_temp_data_processed.Rds")
+```
+
+
+## computing summaries 
+```{r}
+## make function
+
+MYsummarySE <- function(data = NULL, measurevar, groupvars = NULL, na.rm = FALSE, 
+          conf.interval = 0.95, .drop = TRUE) 
+{
+  length2 <- function(x, na.rm = FALSE) {
+    if (na.rm) 
+      sum(!is.na(x))
+    else length(x)
+  }
+  datac <- plyr::ddply(data, groupvars, .drop = .drop, .fun = function(xx, 
+                                                                 col, na.rm) {
+    c(N = length2(xx[, col], na.rm = na.rm), mean = mean(xx[, 
+                                                            col], na.rm = na.rm), sd = sd(xx[, col], na.rm = na.rm))
+  }, measurevar, na.rm)
+  datac$date <- sub('X', '', measurevar)
+  datac$se <- datac$sd/sqrt(datac$N)
+  ciMult <- qt(conf.interval/2 + 0.5, datac$N - 1)
+  datac$ci <- datac$se * ciMult
+  return(datac)
+}
+```
+
+### precipitation 
+```{r, warning = FALSE}
+library(dplyr)
+# 
+## need to replace NaNs with NA
+precip_data <- precip_data[!precip_data$anthromes2023_3CL == -9999,] %>% mutate_all(~ifelse(is.nan(.), NA, .))
+# 
+cols <- grep('X', names(precip_data), value = TRUE)
+
+iterations <- length(cols)                               # used for the foreach loop  
+
+# for loop ------------------------------------------------------------
+
+### make empty data frame to store summaries
+precip_summary <- data.frame()
+
+for (i in 1:iterations) {
+  
+  df <- MYsummarySE(data = precip_data, 
+                    measurevar = cols[i], 
+                    groupvars = c("global_region", "anthromes2023_3CL"), na.rm = T)
+  precip_summary <- rbind(precip_summary, df)
+}
+
+## convert date to correct format
+precip_summary$date <- as.Date(precip_summary$date, format = "%Y.%m.%d")
+
+## save data object
+saveRDS(precip_summary, file = "C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/Anth_R_omes/CMIP6_precip_summary.Rds")
+```
+
+
+### temperature
+```{r, warning = FALSE}
+## need to replace NaNs with NA
+temp_data <- temp_data[!temp_data$anthromes2023_3CL == -9999,] %>% mutate_all(~ifelse(is.nan(.), NA, .))
+
+# 
+cols <- grep('X', names(temp_data), value = TRUE)
+
+iterations <- length(cols)                               # used for the foreach loop  
+
+# for loop ------------------------------------------------------------
+
+### make empty data frame to store summaries
+temp_summary <- data.frame()
+
+for (i in 1:iterations) {
+  
+  df <- MYsummarySE(data = temp_data, 
+                    measurevar = cols[i], 
+                    groupvars = c("global_region", "anthromes2023_3CL"), na.rm = T)
+  temp_summary <- rbind(temp_summary, df)
+}
+
+## convert date to correct format
+temp_summary$date <- as.Date(temp_summary$date, format = "%Y.%m.%d")
+
+## save data object
+saveRDS(temp_summary, file = "C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/Anth_R_omes/CMIP6_temp_summary.Rds")
+
+```
+
+
+## Soils data
+
+### Zobler 106 classes
+```{r}
+### the Zobler soil type data are in ascii format 
+zobler_soil <- raster::raster('C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/CMIP6/ZoblerSoil_418/ZoblerSoil_418/data/zstype106.asc')
+
+## crop to tropics
+zobler_soil_tropics <- crop(zobler_soil, e1)
+
+## crop to temperate 1
+zobler_soil_north <- crop(zobler_soil, e2)
+
+## crop to temperate 2
+zobler_soil_south <- crop(zobler_soil, e3)
+```
+
+```{r}
+### exract data - ZOBLER Soils Data
+soils_tropics <- raster::extract(zobler_soil_tropics, forC_coords_sp_tropics, sp = T)
+soils_north <- raster::extract(zobler_soil_north, forC_coords_sp_north, sp = T)
+soils_south <- raster::extract(zobler_soil_south, forC_coords_sp_south, sp = T)
+```
+
+```{r}
+soils_north <- as.data.table(soils_north)
+soils_south <- as.data.table(soils_south)
+soils_tropics <- as.data.table(soils_tropics)
+```
+
+```{r}
+soils_data <- rbind(soils_north, soils_tropics, soils_south)
+
+soils_data$global_region <- c(rep("temperate & boreal", dim(soils_north)[1]), 
+                             rep("tropical", dim(soils_tropics)[1]), 
+                             rep("temperate & boreal", dim(soils_south)[1]))
+
+soils_data$anthromes2023_3CL <- extr_anthromes_df$anthromes2023_3CL
+soils_data$anthromes2023_3CL <- factor(soils_data$anthromes2023_3CL, levels = c("intensive", "cultured", "wildlands"))
+```
+
+```{r}
+saveRDS(soils_data, file = "CMIP6_Zobler_106_soil_classes_ANTHROMES.Rds")
+```
+
+### Zobler 27 classes
+```{r}
+### the Zobler soil type data are in ascii format 
+zobler_soil2 <- raster::raster('C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/CMIP6/ZoblerSoil_418/ZoblerSoil_418/data/zstype27.asc')
+
+## crop to tropics
+zobler_soil2_tropics <- crop(zobler_soil2, e1)
+
+## crop to temperate 1
+zobler_soil2_north <- crop(zobler_soil2, e2)
+
+## crop to temperate 2
+zobler_soil2_south <- crop(zobler_soil2, e3)
+```
+
+```{r}
+### exract data - ZOBLER Soils Data
+soils2_tropics <- raster::extract(zobler_soil2_tropics, forC_coords_sp_tropics, sp = T)
+soils2_north <- raster::extract(zobler_soil2_north, forC_coords_sp_north, sp = T)
+soils2_south <- raster::extract(zobler_soil2_south, forC_coords_sp_south, sp = T)
+```
+
+```{r}
+soils2_north <- as.data.table(soils2_north)
+soils2_south <- as.data.table(soils2_south)
+soils2_tropics <- as.data.table(soils2_tropics)
+```
+
+```{r}
+soils2_data <- rbind(soils2_north, soils2_tropics, soils2_south)
+
+soils2_data$global_region <- c(rep("temperate & boreal", dim(soils2_north)[1]), 
+                             rep("tropical", dim(soils2_tropics)[1]), 
+                             rep("temperate & boreal", dim(soils2_south)[1]))
+
+soils2_data$anthromes2023_3CL <- extr_anthromes_df$anthromes2023_3CL
+```
+
+```{r}
+saveRDS(soils2_data, file = "CMIP6_Zobler_27_soil_classes_ANTHROMES.Rds")
+```
+
+
+## LUH2v2 land use data
+### FOREST/non-FOREST : fstnf
+
+```{r}
+### loading George Hurtt land-use data
+f_name_LUH2 <- 'C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/CMIP6/LUH2 v2h/staticData_quarterdeg.nc'
+
+# primary forest
+LUH2.fstnf <- raster(f_name_LUH2, varname = "fstnf")
+```
+
+```{r}
+## crop to tropics
+LUH2.fstnf_tropics <- crop(LUH2.fstnf, e1)
+
+## crop to temperate 1
+LUH2.fstnf_north <- crop(LUH2.fstnf, e2)
+
+## crop to temperate 2
+LUH2.fstnf_south <- crop(LUH2.fstnf, e3)
+```
+
+
+```{r}
+### exract data - LUH2 primary forst
+fstnf_tropics <- raster::extract(LUH2.fstnf_tropics, forC_coords_sp_tropics, sp = T)
+fstnf_north <- raster::extract(LUH2.fstnf_north,forC_coords_sp_north, sp = T)
+fstnf_south <- raster::extract(LUH2.fstnf_south, forC_coords_sp_south, sp = T)
+```
+
+
+```{r}
+fstnf_data <- rbind(fstnf_north@data, 
+                    fstnf_tropics@data, 
+                    fstnf_south@data)
+
+fstnf_data$global_region <- c(rep("temperate & boreal", dim(fstnf_north)[1]), 
+                             rep("tropical", dim(fstnf_tropics)[1]), 
+                             rep("temperate & boreal", dim(fstnf_south)[1]))
+
+fstnf_data$anthromes2023_3CL <- extr_anthromes_df$anthromes2023_3CL
+
+colnames(fstnf_data)[1] <- "LUH2_fstnf"
+```
+
+```{r}
+saveRDS(fstnf_data, file = "CMIP6_staticLUH2_fstnf_data.Rds")
+```
+
+### compute summary
+```{r}
+luh2_fstnf_summary <- fstnf_data[!fstnf_data$anthromes2023_3CL == -9999,] %>% dplyr::group_by(global_region, anthromes2023_3CL) %>% dplyr::count(LUH2_fstnf)
+
+## refactor for plotting order 
+luh2_fstnf_summary$global_region <- factor(luh2_fstnf_summary$global_region, levels = c("tropical", "temperate & boreal"))
+
+## 
+luh2_fstnf_summary$anthromes2023_3CL <- factor(luh2_fstnf_summary$anthromes2023_3CL, levels = c("intensive", "cultured", "wildlands"))
+```
+
+
+
+
+## plotting
+
+### precipitation -- ridge plot
+```{r}
+library(ggridges)
+theme_set(theme_minimal())
+```
+
+```{r}
+precip_ridges <- ggplot(aes(x = mean*86400, y = factor(precip_summary$anthromes2023_3CL, 
+                                                       levels = c("intensive", "cultured", "wildlands")), 
+                            fill = stat(x)), data = precip_summary) + 
+                 geom_vline(xintercept = 0, lty = 3) +
+                 geom_density_ridges_gradient(scale = 1.5, size = 0.3, rel_min_height = 0.01) +
+                 facet_wrap(vars(global_region), ncol = 1) +
+                 scale_fill_distiller(name = "Precipitation (mm/month)") +
+                 # labs(title = 'CMIP6 historical (1850-2014) period') + 
+                 theme(legend.position = "none") + 
+                 xlab(expression("precipitation (mm month"^-1*")")) + ylab("3-class Anthrome")
+
+
+precip_ridges
+```
+
+### temperature -- ridge plot
+```{r}
+temp_ridges <- ggplot(aes(x = (mean - 273.15), y = factor(precip_summary$anthromes2023_3CL, 
+                                                          levels = c("intensive", "cultured", "wildlands")), 
+                          fill = stat(x)), data = temp_summary) + 
+               geom_vline(xintercept = 0, lty = 3) +
+               geom_density_ridges_gradient(scale = 1.5, size = 0.3, rel_min_height = 0.01) +
+               facet_wrap(vars(global_region), ncol = 1) +
+               scale_fill_viridis_c(name = "Temperature (°C)", option = "C") +
+               # labs(title = 'CMIP6 historical (1850-2014) period') + 
+               xlab("Temperature (°C)") + ylab("3-class Anthrome") +
+               theme(legend.position = "none", 
+                     axis.title.y = element_blank()) 
+
+
+temp_ridges
+```
+
+### precipitation -- timeseries plot
+```{r}
+precip_ts <- ggplot(aes(x = date, y = mean, color = anthromes2023_3CL, fill = anthromes2023_3CL), data = precip_summary) +
+             geom_line() + geom_ribbon(aes(ymax = mean + se, ymin = mean - se)) +
+             facet_wrap(vars(global_region), ncol = 1, scales = "free") +
+             theme_classic() + ylab(expression("precipitation (mm day"^-1*")")) +
+             xlab("date") +
+             scale_fill_manual(values = c("#efcb681A", "#70a0af1a", "#160c281a"), name = "3-class Anthrome") +
+             scale_color_manual(values = c("#efcb68b3", "#70a0afb3", "#160c28b3"), name = "3-class Anthrome") +
+             scale_y_continuous(labels = function(x)round(x*86400)) + theme(legend.position = "top")
+
+# tiff(filename = "ANTHROMES_CMIP6_Historical_precipiation.tiff", width = 19, height = 12, units = "cm", res = 600, compression = "lzw")
+precip_ts
+# dev.off()
+```
+
+### temperature -- timeseries plot
+```{r}
+temp_ts <- ggplot(aes(x = date, y = mean, color = anthromes2023_3CL, fill = anthromes2023_3CL), data = temp_summary) +
+           geom_line() + geom_ribbon(aes(ymax = mean + se, ymin = mean - se)) +
+           facet_wrap(vars(global_region), ncol = 1, scales = "free") +
+           theme_classic() + ylab(expression("temperature ("*degree~C*")")) +
+           xlab("date") +
+           scale_fill_manual(values = c("#efcb681A", "#70a0af1a", "#160c281a"), name = "3-class Anthrome") +
+           scale_color_manual(values = c("#efcb68b3", "#70a0afb3", "#160c28b3"), name = "3-class Anthrome") +
+           scale_y_continuous(labels = function(x)round(x-273.15)) + theme(legend.position = "top")
+
+# tiff(filename = "ANTHROMES_CMIP6_Historical_temperature.tiff", width = 19, height =12, units = "cm", res = 600, compression = "lzw")
+temp_ts
+# dev.off()
+```
+
+### LUH2v2
+```{r}
+gg.luh2 <- ggplot(aes(fill = as.factor(LUH2_fstnf), y = n, x = factor(anthromes2023_3CL, 
+                                                                         levels = c("intensive", "cultured", "wildlands"))), 
+                  data = luh2_fstnf_summary) +
+           geom_bar(position = "fill", stat = "identity") + facet_wrap(vars(global_region), ncol = 1) +
+           geom_hline(yintercept = 0, lty = 3) +
+           geom_hline(yintercept = 0.25, lty = 3) +
+           geom_hline(yintercept = 0.5, lty = 3) +
+           geom_hline(yintercept = 0.75, lty = 3) +
+           geom_hline(yintercept = 1, lty = 3) +
+           theme_minimal() +
+           scale_y_continuous(name = "Percentage of ForC sites", 
+                              labels = scales::percent) + 
+          # scale_x_discrete(name = "Woodland Anthrome", 
+          #                  labels = c("Residential", "Populated", "Remote", "Wild")) +
+          xlab("3-class Anthrome") +
+          scale_fill_manual(values = c("gray", "forestgreen"), name = " ", 
+                            labels = c("non-forested", "forested")) + 
+          theme(legend.position = "bottom", legend.key.spacing = unit(0.05, "cm") , legend.key.size = unit(0.25, "cm"), 
+                                                            legend.text = element_text(size = 6))
+
+gg.luh2
+```
+
+
+#### soils 
+```{r}
+soil_df2 <- soils2_data[!is.na(soils2_data$zstype27) & !soils2_data$anthromes2023_3CL %in% c(-9999),] %>% 
+            group_by(global_region, anthromes2023_3CL, zstype27) %>% 
+            summarize(n = n()) %>% 
+            mutate(freq = n / sum(n)) %>% 
+            mutate(per = scales::label_percent()(freq))
+
+soil_type_names2 <- c("Acrisol", "Cambisol", "Chernozem", "Podzoluvisol", "Rendzina", "Ferralsol", "Gleysol", "Phaeozem", "Lithosol",
+                      "Fluvisol", "Kastanozem", "Luvisol", "Greyzem", "Nitosol", "Histosol", "Podzosol", "Arenosol", "Regosol", 
+                      "Solonetz", "Andosol", "Ranker", "Vertisol", "Planosol", "Xerosol", "Yermosol", "Solonchek")
+```
+
+
+```{r}
+## refactor for plotting order 
+soil_df2$global_region <- factor(soil_df2$global_region , levels = c("tropical", "temperate & boreal"))
+soil_df2$anthromes2023_3CL <- factor(soil_df2$anthromes2023_3CL, levels = c("intensive", "cultured", "wildlands"))
+
+
+gg_soils2b <- ggplot(aes(x = as.factor(anthromes2023_3CL), y = freq, fill = as.factor(zstype27)), data = soil_df2) + 
+              geom_bar(position = "fill", stat = "identity") + 
+              geom_hline(yintercept = 0, lty = 3) +
+              geom_hline(yintercept = 0.25, lty = 3) +
+              geom_hline(yintercept = 0.5, lty = 3) +
+              geom_hline(yintercept = 0.75, lty = 3) +
+              geom_hline(yintercept = 1, lty = 3) +
+              facet_wrap(vars(global_region), ncol = 1) +
+              theme_minimal() + theme(legend.position = "bottom") + 
+              xlab("3-class Anthrome") +
+              scale_y_continuous(name = "Percentage of ForC sites", 
+                                 labels = scales::percent) + 
+              scale_fill_manual(name = NULL, 
+                                values = wesanderson::wes_palette("Darjeeling1", 26, type = c("continuous")),
+                                labels = soil_type_names2) + 
+              guides(fill = guide_legend(ncol = 6)) + theme(legend.key.spacing = unit(0.05, "cm") , legend.key.size = unit(0.25, "cm"), 
+                                                            legend.text = element_text(size = 6))
+
+# tiff(file = "CMIP6_Anthromes_Zobler_SoilClasses2.tiff", width = 26, height = 12, units = "cm", res = 600, compression = "lzw")
+gg_soils2b
+```
+
+###
+```{r}
+## put all together 
+library(ggpubr)
+
+tiff(filename = "CMIP6_2x2.tiff", width = 20, height = 30, units = "cm", compression = "lzw", res = 600)
+
+ggpubr::ggarrange(ggpubr::ggarrange(precip_ridges, temp_ridges, ncol = 2, nrow = 1, widths = c(1.1,1), labels = c("A", "B")), 
+                  ggpubr::ggarrange(gg.luh2,  gg_soils2b + theme(axis.title.y = element_blank()), 
+                                    ncol = 2, nrow = 1, labels = c("C","D"), align = "h", widths = c(1.1,1)), 
+                  rnow = 1, ncol = 1, heights = c(1, 1.5))
+
+dev.off()
+
+```

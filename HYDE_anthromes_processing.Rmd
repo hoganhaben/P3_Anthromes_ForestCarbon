@@ -1,0 +1,1331 @@
+---
+title: "Hyde 3.3 Athromes Processing (Figs 1C and Fig 2)"
+author: "JAH"
+date: "`r Sys.Date()`"
+output: 
+  html_document: 
+    toc: true
+    toc_float: true
+    toc_collapsed: true
+    toc_depth: 3
+---
+
+```{r include=FALSE}
+knitr::opts_chunk$set(tidy.opts = list(width.cutoff = 60), tidy = TRUE, echo = TRUE, message = TRUE, warning = TRUE)
+```
+
+# Background:
+
+The file containes analyses for Figures 1C and Figure 2 in the manuscript.  The HYDE 3.3 
+(https://doi.org/10.24416/UU01-94FNH0) dataset is read in and processed to 3-class Anthromes (wildlands vs. cultured vs. intensive land areas)
+
+
+# Fig 1C
+
+```{r}
+### make a plot 
+library(ggplot2)
+```
+
+
+## read in ascii data
+```{r}
+anth_1900 <- read.table("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/anthromes1900AD.asc", sep = " ", header = FALSE, skip = 6,  na.strings = "-1")
+
+anth_1910 <- read.table("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/anthromes1910AD.asc", sep = " ", header = FALSE, skip = 6,  na.strings = "-1")
+
+anth_1920 <- read.table("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/anthromes1920AD.asc", sep = " ", header = FALSE, skip = 6,  na.strings = "-1")
+
+anth_1930 <- read.table("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/anthromes1930AD.asc", sep = " ", header = FALSE, skip = 6,  na.strings = "-1")
+
+anth_1940 <- read.table("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/anthromes1940AD.asc", sep = " ", header = FALSE, skip = 6,  na.strings = "-1")
+
+anth_1950 <- read.table("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/anthromes1950AD.asc", sep = " ", header = FALSE, skip = 6,  na.strings = "-1")
+```
+
+```{r}
+anth_1951 <- read.table("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/anthromes1951AD.asc", sep = " ", header = FALSE, skip = 6,  na.strings = "-1")
+
+anth_1952 <- read.table("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/anthromes1952AD.asc", sep = " ", header = FALSE, skip = 6,  na.strings = "-1")
+
+anth_1953 <- read.table("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/anthromes1953AD.asc", sep = " ", header = FALSE, skip = 6,  na.strings = "-1")
+
+anth_1954 <- read.table("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/anthromes1954AD.asc", sep = " ", header = FALSE, skip = 6,  na.strings = "-1")
+
+anth_1955 <- read.table("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/anthromes1955AD.asc", sep = " ", header = FALSE, skip = 6,  na.strings = "-1")
+
+anth_1956 <- read.table("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/anthromes1956AD.asc", sep = " ", header = FALSE, skip = 6,  na.strings = "-1")
+
+anth_1957 <- read.table("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/anthromes1957AD.asc", sep = " ", header = FALSE, skip = 6,  na.strings = "-1")
+
+anth_1958 <- read.table("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/anthromes1958AD.asc", sep = " ", header = FALSE, skip = 6,  na.strings = "-1")
+
+anth_1959 <- read.table("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/anthromes1959AD.asc", sep = " ", header = FALSE, skip = 6,  na.strings = "-1")
+
+anth_1960 <- read.table("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/anthromes1960AD.asc", sep = " ", header = FALSE, skip = 6,  na.strings = "-1")
+```
+
+```{r}
+anth_1961 <- read.table("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/anthromes1961AD.asc", sep = " ", header = FALSE, skip = 6,  na.strings = "-1")
+
+anth_1962 <- read.table("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/anthromes1962AD.asc", sep = " ", header = FALSE, skip = 6,  na.strings = "-1")
+
+anth_1963 <- read.table("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/anthromes1963AD.asc", sep = " ", header = FALSE, skip = 6,  na.strings = "-1")
+
+anth_1964 <- read.table("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/anthromes1964AD.asc", sep = " ", header = FALSE, skip = 6,  na.strings = "-1")
+
+anth_1965 <- read.table("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/anthromes1965AD.asc", sep = " ", header = FALSE, skip = 6,  na.strings = "-1")
+
+anth_1966 <- read.table("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/anthromes1966AD.asc", sep = " ", header = FALSE, skip = 6,  na.strings = "-1")
+
+anth_1967 <- read.table("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/anthromes1967AD.asc", sep = " ", header = FALSE, skip = 6,  na.strings = "-1")
+
+anth_1968 <- read.table("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/anthromes1968AD.asc", sep = " ", header = FALSE, skip = 6,  na.strings = "-1")
+
+anth_1969 <- read.table("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/anthromes1969AD.asc", sep = " ", header = FALSE, skip = 6,  na.strings = "-1")
+
+anth_1970 <- read.table("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/anthromes1970AD.asc", sep = " ", header = FALSE, skip = 6,  na.strings = "-1")
+
+```
+
+```{r}
+anth_1971 <- read.table("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/anthromes1971AD.asc", sep = " ", header = FALSE, skip = 6,  na.strings = "-1")
+
+anth_1972 <- read.table("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/anthromes1972AD.asc", sep = " ", header = FALSE, skip = 6,  na.strings = "-1")
+
+anth_1973 <- read.table("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/anthromes1973AD.asc", sep = " ", header = FALSE, skip = 6,  na.strings = "-1")
+
+anth_1974 <- read.table("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/anthromes1974AD.asc", sep = " ", header = FALSE, skip = 6,  na.strings = "-1")
+
+anth_1975 <- read.table("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/anthromes1975AD.asc", sep = " ", header = FALSE, skip = 6,  na.strings = "-1")
+
+anth_1976 <- read.table("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/anthromes1976AD.asc", sep = " ", header = FALSE, skip = 6,  na.strings = "-1")
+
+anth_1977 <- read.table("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/anthromes1977AD.asc", sep = " ", header = FALSE, skip = 6,  na.strings = "-1")
+
+anth_1978 <- read.table("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/anthromes1978AD.asc", sep = " ", header = FALSE, skip = 6,  na.strings = "-1")
+
+anth_1979 <- read.table("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/anthromes1979AD.asc", sep = " ", header = FALSE, skip = 6,  na.strings = "-1")
+
+anth_1980 <- read.table("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/anthromes1980AD.asc", sep = " ", header = FALSE, skip = 6,  na.strings = "-1")
+
+```
+
+
+
+```{r}
+anth_1981 <- read.table("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/anthromes1981AD.asc", sep = " ", header = FALSE, skip = 6,  na.strings = "-1")
+
+anth_1982 <- read.table("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/anthromes1982AD.asc", sep = " ", header = FALSE, skip = 6,  na.strings = "-1")
+
+anth_1983 <- read.table("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/anthromes1983AD.asc", sep = " ", header = FALSE, skip = 6,  na.strings = "-1")
+
+anth_1984 <- read.table("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/anthromes1984AD.asc", sep = " ", header = FALSE, skip = 6,  na.strings = "-1")
+
+anth_1985 <- read.table("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/anthromes1985AD.asc", sep = " ", header = FALSE, skip = 6,  na.strings = "-1")
+
+anth_1986 <- read.table("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/anthromes1986AD.asc", sep = " ", header = FALSE, skip = 6,  na.strings = "-1")
+
+anth_1987 <- read.table("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/anthromes1987AD.asc", sep = " ", header = FALSE, skip = 6,  na.strings = "-1")
+
+anth_1988 <- read.table("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/anthromes1988AD.asc", sep = " ", header = FALSE, skip = 6,  na.strings = "-1")
+
+anth_1989 <- read.table("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/anthromes1989AD.asc", sep = " ", header = FALSE, skip = 6,  na.strings = "-1")
+
+anth_1990 <- read.table("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/anthromes1990AD.asc", sep = " ", header = FALSE, skip = 6,  na.strings = "-1")
+
+```
+
+```{r}
+anth_1991 <- read.table("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/anthromes1991AD.asc", sep = " ", header = FALSE, skip = 6,  na.strings = "-1")
+
+anth_1992 <- read.table("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/anthromes1992AD.asc", sep = " ", header = FALSE, skip = 6,  na.strings = "-1")
+
+anth_1993 <- read.table("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/anthromes1993AD.asc", sep = " ", header = FALSE, skip = 6,  na.strings = "-1")
+
+anth_1994 <- read.table("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/anthromes1994AD.asc", sep = " ", header = FALSE, skip = 6,  na.strings = "-1")
+
+anth_1995 <- read.table("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/anthromes1995AD.asc", sep = " ", header = FALSE, skip = 6,  na.strings = "-1")
+
+anth_1996 <- read.table("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/anthromes1996AD.asc", sep = " ", header = FALSE, skip = 6,  na.strings = "-1")
+
+anth_1997 <- read.table("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/anthromes1997AD.asc", sep = " ", header = FALSE, skip = 6,  na.strings = "-1")
+
+anth_1998 <- read.table("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/anthromes1998AD.asc", sep = " ", header = FALSE, skip = 6,  na.strings = "-1")
+
+anth_1999 <- read.table("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/anthromes1999AD.asc", sep = " ", header = FALSE, skip = 6,  na.strings = "-1")
+
+anth_2000 <- read.table("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/anthromes2000AD.asc", sep = " ", header = FALSE, skip = 6,  na.strings = "-1")
+
+```
+
+```{r}
+anth_2001 <- read.table("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/anthromes2001AD.asc", sep = " ", header = FALSE, skip = 6,  na.strings = "-1")
+
+anth_2002 <- read.table("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/anthromes2002AD.asc", sep = " ", header = FALSE, skip = 6,  na.strings = "-1")
+
+anth_2003 <- read.table("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/anthromes2003AD.asc", sep = " ", header = FALSE, skip = 6,  na.strings = "-1")
+
+anth_2004 <- read.table("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/anthromes2004AD.asc", sep = " ", header = FALSE, skip = 6,  na.strings = "-1")
+
+anth_2005 <- read.table("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/anthromes2005AD.asc", sep = " ", header = FALSE, skip = 6,  na.strings = "-1")
+
+anth_2006 <- read.table("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/anthromes2006AD.asc", sep = " ", header = FALSE, skip = 6,  na.strings = "-1")
+
+anth_2007 <- read.table("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/anthromes2007AD.asc", sep = " ", header = FALSE, skip = 6,  na.strings = "-1")
+
+anth_2008 <- read.table("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/anthromes2008AD.asc", sep = " ", header = FALSE, skip = 6,  na.strings = "-1")
+
+anth_2009 <- read.table("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/anthromes2009AD.asc", sep = " ", header = FALSE, skip = 6,  na.strings = "-1")
+
+anth_2010 <- read.table("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/anthromes2010AD.asc", sep = " ", header = FALSE, skip = 6,  na.strings = "-1")
+
+```
+
+
+```{r}
+anth_2011 <- read.table("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/anthromes2011AD.asc", sep = " ", header = FALSE, skip = 6,  na.strings = "-1")
+
+anth_2012 <- read.table("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/anthromes2012AD.asc", sep = " ", header = FALSE, skip = 6,  na.strings = "-1")
+
+anth_2013 <- read.table("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/anthromes2013AD.asc", sep = " ", header = FALSE, skip = 6,  na.strings = "-1")
+
+anth_2014 <- read.table("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/anthromes2014AD.asc", sep = " ", header = FALSE, skip = 6,  na.strings = "-1")
+
+anth_2015 <- read.table("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/anthromes2015AD.asc", sep = " ", header = FALSE, skip = 6,  na.strings = "-1")
+
+anth_2016 <- read.table("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/anthromes2016AD.asc", sep = " ", header = FALSE, skip = 6,  na.strings = "-1")
+
+anth_2017 <- read.table("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/anthromes2017AD.asc", sep = " ", header = FALSE, skip = 6,  na.strings = "-1")
+
+anth_2018 <- read.table("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/anthromes2018AD.asc", sep = " ", header = FALSE, skip = 6,  na.strings = "-1")
+
+anth_2019 <- read.table("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/anthromes2019AD.asc", sep = " ", header = FALSE, skip = 6,  na.strings = "-1")
+
+anth_2020 <- read.table("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/anthromes2020AD.asc", sep = " ", header = FALSE, skip = 6,  na.strings = "-1")
+
+anth_2021 <- read.table("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/anthromes2021AD.asc", sep = " ", header = FALSE, skip = 6,  na.strings = "-1")
+
+anth_2022 <- read.table("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/anthromes2022AD.asc", sep = " ", header = FALSE, skip = 6,  na.strings = "-1")
+
+anth_2023 <- read.table("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/anthromes2023AD.asc", sep = " ", header = FALSE, skip = 6,  na.strings = "-1")
+
+```
+
+
+
+```{r}
+g_area <- read.table("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/general_files/garea_cr.asc", sep = " ", header = FALSE, skip = 6, na.strings = "-9999")
+
+g_area <- g_area[,1:4320]
+```
+
+
+```{r}
+### make a massive dataset
+HYDE_anthromes <-  as.data.frame(cbind(unlist(anth_1900), unlist(anth_1910), unlist(anth_1920), 
+                                       unlist(anth_1930), unlist(anth_1940), unlist(anth_1950), 
+                        unlist(anth_1951), unlist(anth_1952), unlist(anth_1953), unlist(anth_1954), unlist(anth_1955),
+                        unlist(anth_1956), unlist(anth_1957), unlist(anth_1958), unlist(anth_1959), unlist(anth_1960), 
+                        unlist(anth_1961), unlist(anth_1962), unlist(anth_1963), unlist(anth_1964), unlist(anth_1965),
+                        unlist(anth_1966), unlist(anth_1967), unlist(anth_1968), unlist(anth_1969), unlist(anth_1970), 
+                        unlist(anth_1971), unlist(anth_1972), unlist(anth_1973), unlist(anth_1974), unlist(anth_1975),
+                        unlist(anth_1976), unlist(anth_1977), unlist(anth_1978), unlist(anth_1979), unlist(anth_1980), 
+                        unlist(anth_1981), unlist(anth_1982), unlist(anth_1983), unlist(anth_1984), unlist(anth_1985),
+                        unlist(anth_1986), unlist(anth_1987), unlist(anth_1988), unlist(anth_1989), unlist(anth_1990), 
+                        unlist(anth_1991), unlist(anth_1992), unlist(anth_1993), unlist(anth_1994), unlist(anth_1995),
+                        unlist(anth_1996), unlist(anth_1997), unlist(anth_1998), unlist(anth_1999), unlist(anth_2000), 
+                        unlist(anth_2001), unlist(anth_2002), unlist(anth_2003), unlist(anth_2004), unlist(anth_2005),
+                        unlist(anth_2006), unlist(anth_2007), unlist(anth_2008), unlist(anth_2009), unlist(anth_2010), 
+                        unlist(anth_2011), unlist(anth_2012), unlist(anth_2013), unlist(anth_2014), unlist(anth_2015),
+                        unlist(anth_2016), unlist(anth_2017), unlist(anth_2018), unlist(anth_2019), unlist(anth_2020), 
+                        unlist(anth_2021), unlist(anth_2022), unlist(anth_2023), unlist(g_area)))
+
+
+colnames(HYDE_anthromes) <- c(seq(1900, 1950, by = 10), seq(1951, 2023, by = 1), "area")
+
+HYDE_anthromes$`1900` <- as.factor(HYDE_anthromes$`1900`)
+HYDE_anthromes$`1910` <- as.factor(HYDE_anthromes$`1910`)
+HYDE_anthromes$`1920` <- as.factor(HYDE_anthromes$`1920`)
+HYDE_anthromes$`1930` <- as.factor(HYDE_anthromes$`1930`)
+HYDE_anthromes$`1940` <- as.factor(HYDE_anthromes$`1940`)
+HYDE_anthromes$`1950` <- as.factor(HYDE_anthromes$`1950`)
+
+HYDE_anthromes$`1951` <- as.factor(HYDE_anthromes$`1951`)
+HYDE_anthromes$`1952` <- as.factor(HYDE_anthromes$`1952`)
+HYDE_anthromes$`1954` <- as.factor(HYDE_anthromes$`1954`)
+HYDE_anthromes$`1955` <- as.factor(HYDE_anthromes$`1955`)
+HYDE_anthromes$`1956` <- as.factor(HYDE_anthromes$`1956`)
+HYDE_anthromes$`1957` <- as.factor(HYDE_anthromes$`1957`)
+HYDE_anthromes$`1958` <- as.factor(HYDE_anthromes$`1958`)
+HYDE_anthromes$`1959` <- as.factor(HYDE_anthromes$`1959`)
+HYDE_anthromes$`1960` <- as.factor(HYDE_anthromes$`1960`)
+
+HYDE_anthromes$`1961` <- as.factor(HYDE_anthromes$`1961`)
+HYDE_anthromes$`1962` <- as.factor(HYDE_anthromes$`1962`)
+HYDE_anthromes$`1964` <- as.factor(HYDE_anthromes$`1964`)
+HYDE_anthromes$`1965` <- as.factor(HYDE_anthromes$`1965`)
+HYDE_anthromes$`1966` <- as.factor(HYDE_anthromes$`1966`)
+HYDE_anthromes$`1967` <- as.factor(HYDE_anthromes$`1967`)
+HYDE_anthromes$`1968` <- as.factor(HYDE_anthromes$`1968`)
+HYDE_anthromes$`1969` <- as.factor(HYDE_anthromes$`1969`)
+HYDE_anthromes$`1970` <- as.factor(HYDE_anthromes$`1970`)
+
+HYDE_anthromes$`1971` <- as.factor(HYDE_anthromes$`1971`)
+HYDE_anthromes$`1972` <- as.factor(HYDE_anthromes$`1972`)
+HYDE_anthromes$`1974` <- as.factor(HYDE_anthromes$`1974`)
+HYDE_anthromes$`1975` <- as.factor(HYDE_anthromes$`1975`)
+HYDE_anthromes$`1976` <- as.factor(HYDE_anthromes$`1976`)
+HYDE_anthromes$`1977` <- as.factor(HYDE_anthromes$`1977`)
+HYDE_anthromes$`1978` <- as.factor(HYDE_anthromes$`1978`)
+HYDE_anthromes$`1979` <- as.factor(HYDE_anthromes$`1979`)
+HYDE_anthromes$`1980` <- as.factor(HYDE_anthromes$`1980`)
+
+HYDE_anthromes$`1981` <- as.factor(HYDE_anthromes$`1981`)
+HYDE_anthromes$`1982` <- as.factor(HYDE_anthromes$`1982`)
+HYDE_anthromes$`1984` <- as.factor(HYDE_anthromes$`1984`)
+HYDE_anthromes$`1985` <- as.factor(HYDE_anthromes$`1985`)
+HYDE_anthromes$`1986` <- as.factor(HYDE_anthromes$`1986`)
+HYDE_anthromes$`1987` <- as.factor(HYDE_anthromes$`1987`)
+HYDE_anthromes$`1988` <- as.factor(HYDE_anthromes$`1988`)
+HYDE_anthromes$`1989` <- as.factor(HYDE_anthromes$`1989`)
+HYDE_anthromes$`1990` <- as.factor(HYDE_anthromes$`1990`)
+
+HYDE_anthromes$`1991` <- as.factor(HYDE_anthromes$`1991`)
+HYDE_anthromes$`1992` <- as.factor(HYDE_anthromes$`1992`)
+HYDE_anthromes$`1994` <- as.factor(HYDE_anthromes$`1994`)
+HYDE_anthromes$`1995` <- as.factor(HYDE_anthromes$`1995`)
+HYDE_anthromes$`1996` <- as.factor(HYDE_anthromes$`1996`)
+HYDE_anthromes$`1997` <- as.factor(HYDE_anthromes$`1997`)
+HYDE_anthromes$`1998` <- as.factor(HYDE_anthromes$`1998`)
+HYDE_anthromes$`1999` <- as.factor(HYDE_anthromes$`1999`)
+HYDE_anthromes$`2000` <- as.factor(HYDE_anthromes$`2000`)
+
+HYDE_anthromes$`2001` <- as.factor(HYDE_anthromes$`2001`)
+HYDE_anthromes$`2002` <- as.factor(HYDE_anthromes$`2002`)
+HYDE_anthromes$`2004` <- as.factor(HYDE_anthromes$`2004`)
+HYDE_anthromes$`2005` <- as.factor(HYDE_anthromes$`2005`)
+HYDE_anthromes$`2006` <- as.factor(HYDE_anthromes$`2006`)
+HYDE_anthromes$`2007` <- as.factor(HYDE_anthromes$`2007`)
+HYDE_anthromes$`2008` <- as.factor(HYDE_anthromes$`2008`)
+HYDE_anthromes$`2009` <- as.factor(HYDE_anthromes$`2009`)
+HYDE_anthromes$`2010` <- as.factor(HYDE_anthromes$`2010`)
+
+HYDE_anthromes$`2011` <- as.factor(HYDE_anthromes$`2011`)
+HYDE_anthromes$`2012` <- as.factor(HYDE_anthromes$`2012`)
+HYDE_anthromes$`2014` <- as.factor(HYDE_anthromes$`2014`)
+HYDE_anthromes$`2015` <- as.factor(HYDE_anthromes$`2015`)
+HYDE_anthromes$`2016` <- as.factor(HYDE_anthromes$`2016`)
+HYDE_anthromes$`2017` <- as.factor(HYDE_anthromes$`2017`)
+HYDE_anthromes$`2018` <- as.factor(HYDE_anthromes$`2018`)
+HYDE_anthromes$`2019` <- as.factor(HYDE_anthromes$`2019`)
+HYDE_anthromes$`2020` <- as.factor(HYDE_anthromes$`2020`)
+HYDE_anthromes$`2021` <- as.factor(HYDE_anthromes$`2021`)
+HYDE_anthromes$`2022` <- as.factor(HYDE_anthromes$`2022`)
+HYDE_anthromes$`2023` <- as.factor(HYDE_anthromes$`2023`)
+
+
+```
+
+```{r}
+## remove other things--- clean workspace
+rm(anth_1900,anth_1910,anth_1920,anth_1930,anth_1940,anth_1950, 
+   anth_1951,anth_1952,anth_1953,anth_1954,anth_1955,
+   anth_1956,anth_1957,anth_1958,anth_1959,anth_1960, 
+   anth_1961,anth_1962,anth_1963,anth_1964,anth_1965,
+   anth_1966,anth_1967,anth_1968,anth_1969,anth_1970, 
+   anth_1971,anth_1972,anth_1973,anth_1974,anth_1975,
+   anth_1976,anth_1977,anth_1978,anth_1979,anth_1980, 
+   anth_1981,anth_1982,anth_1983,anth_1984,anth_1985,
+   anth_1986,anth_1987,anth_1988,anth_1989,anth_1990, 
+   anth_1991,anth_1992,anth_1993,anth_1994,anth_1995,
+   anth_1996,anth_1997,anth_1998,anth_1999,anth_2000, 
+   anth_2001,anth_2002,anth_2003,anth_2004,anth_2005,
+   anth_2006,anth_2007,anth_2008,anth_2009,anth_2010, 
+   anth_2011,anth_2012,anth_2013,anth_2014,anth_2015,
+   anth_2016,anth_2017,anth_2018,anth_2019,anth_2020, 
+   anth_2021,anth_2022,anth_2023,g_area)
+```
+
+
+
+```{r}
+anthromes_area_summary <- as.data.frame(cbind(
+  ### 1900
+  c(
+    sum(HYDE_anthromes[HYDE_anthromes[,"1900"] %in% c("11","12", "21","22","23","24","31","32","33","34","41","42","43"),"area"]),  ## classifications 11-43 are intensive Anthromes
+    sum(HYDE_anthromes[HYDE_anthromes[,"1900"] %in% c("51","52","53","54"),"area"]),  ## classification 51-54 are cultured Anthromes 
+    sum(HYDE_anthromes[HYDE_anthromes[,"1900"] %in% c("61","62","63"),"area"])  ## classifications 61-63 are wildlands
+  ), 
+  ### 1910
+  c(
+    sum(HYDE_anthromes[HYDE_anthromes[,"1910"] %in% c("11","12", "21","22","23","24","31","32","33","34","41","42","43"),"area"]),  ## classifications 11-43 are intensive Anthromes
+    sum(HYDE_anthromes[HYDE_anthromes[,"1910"] %in% c("51","52","53","54"),"area"]),  ## classification 51-54 are cultured Anthromes 
+    sum(HYDE_anthromes[HYDE_anthromes[,"1910"] %in% c("61","62","63"),"area"])  ## classifications 61-63 are wildlands
+  ), 
+### 1920
+  c(
+    sum(HYDE_anthromes[HYDE_anthromes[,"1920"] %in% c("11","12", "21","22","23","24","31","32","33","34","41","42","43"),"area"]),  ## classifications 11-43 are intensive Anthromes
+    sum(HYDE_anthromes[HYDE_anthromes[,"1920"] %in% c("51","52","53","54"),"area"]),  ## classification 51-54 are cultured Anthromes 
+    sum(HYDE_anthromes[HYDE_anthromes[,"1920"] %in% c("61","62","63"),"area"])  ## classification 53 is remote woodlands/forests
+  ), 
+  ### 1930
+  c(
+    sum(HYDE_anthromes[HYDE_anthromes[,"1930"] %in% c("11","12", "21","22","23","24","31","32","33","34","41","42","43"),"area"]),  ## classifications 11-43 are intensive Anthromes
+    sum(HYDE_anthromes[HYDE_anthromes[,"1930"] %in% c("51","52","53","54"),"area"]),  ## classification 51-54 are cultured Anthromes 
+    sum(HYDE_anthromes[HYDE_anthromes[,"1930"] %in% c("61","62","63"),"area"])  ## classifications 61-63 are wild lands
+  ), 
+### 1940
+  c(
+    sum(HYDE_anthromes[HYDE_anthromes[,"1940"] %in% c("11","12", "21","22","23","24","31","32","33","34","41","42","43"),"area"]),  ## classifications 11-43 are intensive Anthromes
+    sum(HYDE_anthromes[HYDE_anthromes[,"1940"] %in% c("51","52","53","54"),"area"]),  ## classification 51-54 are cultured Anthromes 
+    sum(HYDE_anthromes[HYDE_anthromes[,"1940"] %in% c("61","62","63"),"area"])  ## classifications 61-63 are wild lands
+  ), 
+  ### 1950
+  c(
+    sum(HYDE_anthromes[HYDE_anthromes[,"1950"] %in% c("11","12", "21","22","23","24","31","32","33","34","41","42","43"),"area"]),  ## classifications 11-43 are intensive Anthromes
+    sum(HYDE_anthromes[HYDE_anthromes[,"1950"] %in% c("51","52","53","54"),"area"]),  ## classification 51-54 are cultured Anthromes 
+    sum(HYDE_anthromes[HYDE_anthromes[,"1950"] %in% c("61","62","63"),"area"])  ## classifications 61-63 are wild lands
+  ), 
+### 1951
+  c(
+    sum(HYDE_anthromes[HYDE_anthromes[,"1951"] %in% c("11","12", "21","22","23","24","31","32","33","34","41","42","43"),"area"]),  ## classifications 11-43 are intensive Anthromes
+    sum(HYDE_anthromes[HYDE_anthromes[,"1951"] %in% c("51","52","53","54"),"area"]),  ## classification 51-54 are cultured Anthromes 
+    sum(HYDE_anthromes[HYDE_anthromes[,"1951"] %in% c("61","62","63"),"area"])  ## classifications 61-63 are wild lands
+  ), 
+  ### 1952
+  c(
+    sum(HYDE_anthromes[HYDE_anthromes[,"1952"] %in% c("11","12", "21","22","23","24","31","32","33","34","41","42","43"),"area"]),  ## classifications 11-43 are intensive Anthromes
+    sum(HYDE_anthromes[HYDE_anthromes[,"1952"] %in% c("51","52","53","54"),"area"]),  ## classification 51-54 are cultured Anthromes 
+    sum(HYDE_anthromes[HYDE_anthromes[,"1952"] %in% c("61","62","63"),"area"])  ## classifications 61-63 are wild lands
+  ), 
+### 1953
+  c(
+    sum(HYDE_anthromes[HYDE_anthromes[,"1953"] %in% c("11","12", "21","22","23","24","31","32","33","34","41","42","43"),"area"]),  ## classifications 11-43 are intensive Anthromes
+    sum(HYDE_anthromes[HYDE_anthromes[,"1953"] %in% c("51","52","53","54"),"area"]),  ## classification 51-54 are cultured Anthromes 
+    sum(HYDE_anthromes[HYDE_anthromes[,"1953"] %in% c("61","62","63"),"area"])  ## classifications 61-63 are wild lands
+  ), 
+  ### 1954
+  c(
+    sum(HYDE_anthromes[HYDE_anthromes[,"1954"] %in% c("11","12", "21","22","23","24","31","32","33","34","41","42","43"),"area"]),  ## classifications 11-43 are intensive Anthromes
+    sum(HYDE_anthromes[HYDE_anthromes[,"1954"] %in% c("51","52","53","54"),"area"]),  ## classification 51-54 are cultured Anthromes 
+    sum(HYDE_anthromes[HYDE_anthromes[,"1954"] %in% c("61","62","63"),"area"])  ## classifications 61-63 are wild lands
+  ), 
+### 1955
+  c(
+    sum(HYDE_anthromes[HYDE_anthromes[,"1955"] %in% c("11","12", "21","22","23","24","31","32","33","34","41","42","43"),"area"]),  ## classifications 11-43 are intensive Anthromes
+    sum(HYDE_anthromes[HYDE_anthromes[,"1955"] %in% c("51","52","53","54"),"area"]),  ## classification 51-54 are cultured Anthromes 
+    sum(HYDE_anthromes[HYDE_anthromes[,"1955"] %in% c("61","62","63"),"area"])  ## classifications 61-63 are wild lands
+  ), 
+  ### 1956
+  c(
+    sum(HYDE_anthromes[HYDE_anthromes[,"1956"] %in% c("11","12", "21","22","23","24","31","32","33","34","41","42","43"),"area"]),  ## classifications 11-43 are intensive Anthromes
+    sum(HYDE_anthromes[HYDE_anthromes[,"1956"] %in% c("51","52","53","54"),"area"]),  ## classification 51-54 are cultured Anthromes 
+    sum(HYDE_anthromes[HYDE_anthromes[,"1956"] %in% c("61","62","63"),"area"])  ## classifications 61-63 are wild lands
+  ), 
+
+### 1957
+  c(
+    sum(HYDE_anthromes[HYDE_anthromes[,"1957"] %in% c("11","12", "21","22","23","24","31","32","33","34","41","42","43"),"area"]),  ## classifications 11-43 are intensive Anthromes
+    sum(HYDE_anthromes[HYDE_anthromes[,"1957"] %in% c("51","52","53","54"),"area"]),  ## classification 51-54 are cultured Anthromes 
+    sum(HYDE_anthromes[HYDE_anthromes[,"1957"] %in% c("61","62","63"),"area"])  ## classifications 61-63 are wild lands
+  ), 
+  ### 1958
+  c(
+    sum(HYDE_anthromes[HYDE_anthromes[,"1958"] %in% c("11","12", "21","22","23","24","31","32","33","34","41","42","43"),"area"]),  ## classifications 11-43 are intensive Anthromes
+    sum(HYDE_anthromes[HYDE_anthromes[,"1958"] %in% c("51","52","53","54"),"area"]),  ## classification 51-54 are cultured Anthromes 
+    sum(HYDE_anthromes[HYDE_anthromes[,"1958"] %in% c("61","62","63"),"area"])  ## classifications 61-63 are wildlands
+  ), 
+### 1959
+  c(
+    sum(HYDE_anthromes[HYDE_anthromes[,"1959"] %in% c("11","12", "21","22","23","24","31","32","33","34","41","42","43"),"area"]),  ## classifications 11-43 are intensive Anthromes
+    sum(HYDE_anthromes[HYDE_anthromes[,"1959"] %in% c("51","52","53","54"),"area"]),  ## classification 51-54 are cultured Anthromes 
+    sum(HYDE_anthromes[HYDE_anthromes[,"1959"] %in% c("61","62","63"),"area"])  ## classifications 61-63 are wild lands
+  ), 
+  ### 1960
+  c(
+    sum(HYDE_anthromes[HYDE_anthromes[,"1960"] %in% c("11","12", "21","22","23","24","31","32","33","34","41","42","43"),"area"]),  ## classifications 11-43 are intensive Anthromes
+    sum(HYDE_anthromes[HYDE_anthromes[,"1960"] %in% c("51","52","53","54"),"area"]),  ## classification 51-54 are cultured Anthromes 
+    sum(HYDE_anthromes[HYDE_anthromes[,"1960"] %in% c("61","62","63"),"area"])  ## classifications 61-63 are wild lands
+  ), 
+
+### 1961
+  c(
+    sum(HYDE_anthromes[HYDE_anthromes[,"1961"] %in% c("11","12", "21","22","23","24","31","32","33","34","41","42","43"),"area"]),  ## classifications 11-43 are intensive Anthromes
+    sum(HYDE_anthromes[HYDE_anthromes[,"1961"] %in% c("51","52","53","54"),"area"]),  ## classification 51-54 are cultured Anthromes 
+    sum(HYDE_anthromes[HYDE_anthromes[,"1961"] %in% c("61","62","63"),"area"])  ## classifications 61-63 are wild lands
+  ), 
+  ### 1962
+  c(
+    sum(HYDE_anthromes[HYDE_anthromes[,"1962"] %in% c("11","12", "21","22","23","24","31","32","33","34","41","42","43"),"area"]),  ## classifications 11-43 are intensive Anthromes
+    sum(HYDE_anthromes[HYDE_anthromes[,"1962"] %in% c("51","52","53","54"),"area"]),  ## classification 51-54 are cultured Anthromes 
+    sum(HYDE_anthromes[HYDE_anthromes[,"1962"] %in% c("61","62","63"),"area"])  ## classifications 61-63 are wild lands
+  ), 
+### 1963
+  c(
+    sum(HYDE_anthromes[HYDE_anthromes[,"1963"] %in% c("11","12", "21","22","23","24","31","32","33","34","41","42","43"),"area"]),  ## classifications 11-43 are intensive Anthromes
+    sum(HYDE_anthromes[HYDE_anthromes[,"1963"] %in% c("51","52","53","54"),"area"]),  ## classification 51-54 are cultured Anthromes 
+    sum(HYDE_anthromes[HYDE_anthromes[,"1963"] %in% c("61","62","63"),"area"])  ## classifications 61-63 are wild lands
+  ), 
+  ### 1964
+  c(
+    sum(HYDE_anthromes[HYDE_anthromes[,"1964"] %in% c("11","12", "21","22","23","24","31","32","33","34","41","42","43"),"area"]),  ## classifications 11-43 are intensive Anthromes
+    sum(HYDE_anthromes[HYDE_anthromes[,"1964"] %in% c("51","52","53","54"),"area"]),  ## classification 51-54 are cultured Anthromes 
+    sum(HYDE_anthromes[HYDE_anthromes[,"1964"] %in% c("61","62","63"),"area"])  ## classifications 61-63 are wild lands
+  ), 
+### 1965
+  c(
+    sum(HYDE_anthromes[HYDE_anthromes[,"1965"] %in% c("11","12", "21","22","23","24","31","32","33","34","41","42","43"),"area"]),  ## classifications 11-43 are intensive Anthromes
+    sum(HYDE_anthromes[HYDE_anthromes[,"1965"] %in% c("51","52","53","54"),"area"]),  ## classification 51-54 are cultured Anthromes 
+    sum(HYDE_anthromes[HYDE_anthromes[,"1965"] %in% c("61","62","63"),"area"])  ## classifications 61-63 are wild lands
+  ), 
+  ### 1966
+  c(
+    sum(HYDE_anthromes[HYDE_anthromes[,"1966"] %in% c("11","12", "21","22","23","24","31","32","33","34","41","42","43"),"area"]),  ## classifications 11-43 are intensive Anthromes
+    sum(HYDE_anthromes[HYDE_anthromes[,"1966"] %in% c("51","52","53","54"),"area"]),  ## classification 51-54 are cultured Anthromes 
+    sum(HYDE_anthromes[HYDE_anthromes[,"1966"] %in% c("61","62","63"),"area"])  ## classifications 61-63 are wild lands
+  ), 
+
+### 1967
+  c(
+    sum(HYDE_anthromes[HYDE_anthromes[,"1967"] %in% c("11","12", "21","22","23","24","31","32","33","34","41","42","43"),"area"]),  ## classifications 11-43 are intensive Anthromes
+    sum(HYDE_anthromes[HYDE_anthromes[,"1967"] %in% c("51","52","53","54"),"area"]),  ## classification 51-54 are cultured Anthromes 
+    sum(HYDE_anthromes[HYDE_anthromes[,"1967"] %in% c("61","62","63"),"area"])  ## classifications 61-63 are wild lands
+  ), 
+  ### 1968
+  c(
+    sum(HYDE_anthromes[HYDE_anthromes[,"1968"] %in% c("11","12", "21","22","23","24","31","32","33","34","41","42","43"),"area"]),  ## classifications 11-43 are intensive Anthromes
+    sum(HYDE_anthromes[HYDE_anthromes[,"1968"] %in% c("51","52","53","54"),"area"]),  ## classification 51-54 are cultured Anthromes 
+    sum(HYDE_anthromes[HYDE_anthromes[,"1968"] %in% c("61","62","63"),"area"])  ## classifications 61-63 are wild lands
+  ), 
+### 1969
+  c(
+    sum(HYDE_anthromes[HYDE_anthromes[,"1969"] %in% c("11","12", "21","22","23","24","31","32","33","34","41","42","43"),"area"]),  ## classifications 11-43 are intensive Anthromes
+    sum(HYDE_anthromes[HYDE_anthromes[,"1969"] %in% c("51","52","53","54"),"area"]),  ## classification 51-54 are cultured Anthromes 
+    sum(HYDE_anthromes[HYDE_anthromes[,"1969"] %in% c("61","62","63"),"area"])  ## classifications 61-63 are wild lands
+  ), 
+  ### 1970
+  c(
+    sum(HYDE_anthromes[HYDE_anthromes[,"1970"] %in% c("11","12", "21","22","23","24","31","32","33","34","41","42","43"),"area"]),  ## classifications 11-43 are intensive Anthromes
+    sum(HYDE_anthromes[HYDE_anthromes[,"1970"] %in% c("51","52","53","54"),"area"]),  ## classification 51-54 are cultured Anthromes 
+    sum(HYDE_anthromes[HYDE_anthromes[,"1970"] %in% c("61","62","63"),"area"])  ## classifications 61-63 are wild lands
+  ), 
+### 1971
+  c(
+    sum(HYDE_anthromes[HYDE_anthromes[,"1971"] %in% c("11","12", "21","22","23","24","31","32","33","34","41","42","43"),"area"]),  ## classifications 11-43 are intensive Anthromes
+    sum(HYDE_anthromes[HYDE_anthromes[,"1971"] %in% c("51","52","53","54"),"area"]),  ## classification 51-54 are cultured Anthromes 
+    sum(HYDE_anthromes[HYDE_anthromes[,"1971"] %in% c("61","62","63"),"area"])  ## classifications 61-63 are wild lands
+  ), 
+  ### 1972
+  c(
+    sum(HYDE_anthromes[HYDE_anthromes[,"1972"] %in% c("11","12", "21","22","23","24","31","32","33","34","41","42","43"),"area"]),  ## classifications 11-43 are intensive Anthromes
+    sum(HYDE_anthromes[HYDE_anthromes[,"1972"] %in% c("51","52","53","54"),"area"]),  ## classification 51-54 are cultured Anthromes 
+    sum(HYDE_anthromes[HYDE_anthromes[,"1972"] %in% c("61","62","63"),"area"])  ## classifications 61-63 are wild lands
+  ), 
+### 1973
+  c(
+    sum(HYDE_anthromes[HYDE_anthromes[,"1973"] %in% c("11","12", "21","22","23","24","31","32","33","34","41","42","43"),"area"]),  ## classifications 11-43 are intensive Anthromes
+    sum(HYDE_anthromes[HYDE_anthromes[,"1973"] %in% c("51","52","53","54"),"area"]),  ## classification 51-54 are cultured Anthromes 
+    sum(HYDE_anthromes[HYDE_anthromes[,"1973"] %in% c("61","62","63"),"area"])  ## classifications 61-63 are wild lands
+  ), 
+  ### 1974
+  c(
+    sum(HYDE_anthromes[HYDE_anthromes[,"1974"] %in% c("11","12", "21","22","23","24","31","32","33","34","41","42","43"),"area"]),  ## classifications 11-43 are intensive Anthromes
+    sum(HYDE_anthromes[HYDE_anthromes[,"1974"] %in% c("51","52","53","54"),"area"]),  ## classification 51-54 are cultured Anthromes 
+    sum(HYDE_anthromes[HYDE_anthromes[,"1974"] %in% c("61","62","63"),"area"])  ## classifications 61-63 are wild lands
+  ), 
+### 1975
+  c(
+    sum(HYDE_anthromes[HYDE_anthromes[,"1975"] %in% c("11","12", "21","22","23","24","31","32","33","34","41","42","43"),"area"]),  ## classifications 11-43 are intensive Anthromes
+    sum(HYDE_anthromes[HYDE_anthromes[,"1975"] %in% c("51","52","53","54"),"area"]),  ## classification 51-54 are cultured Anthromes 
+    sum(HYDE_anthromes[HYDE_anthromes[,"1975"] %in% c("61","62","63"),"area"])  ## classifications 61-63 are wild lands
+  ), 
+  ### 1976
+  c(
+    sum(HYDE_anthromes[HYDE_anthromes[,"1976"] %in% c("11","12", "21","22","23","24","31","32","33","34","41","42","43"),"area"]),  ## classifications 11-43 are intensive Anthromes
+    sum(HYDE_anthromes[HYDE_anthromes[,"1976"] %in% c("51","52","53","54"),"area"]),  ## classification 51-54 are cultured Anthromes 
+    sum(HYDE_anthromes[HYDE_anthromes[,"1976"] %in% c("61","62","63"),"area"])  ## classifications 61-63 are wild lands
+  ), 
+
+### 1977
+  c(
+    sum(HYDE_anthromes[HYDE_anthromes[,"1977"] %in% c("11","12", "21","22","23","24","31","32","33","34","41","42","43"),"area"]),  ## classifications 11-43 are intensive Anthromes
+    sum(HYDE_anthromes[HYDE_anthromes[,"1977"] %in% c("51","52","53","54"),"area"]),  ## classification 51-54 are cultured Anthromes 
+    sum(HYDE_anthromes[HYDE_anthromes[,"1977"] %in% c("61","62","63"),"area"])  ## classifications 61-63 are wild lands
+  ), 
+  ### 1978
+  c(
+    sum(HYDE_anthromes[HYDE_anthromes[,"1978"] %in% c("11","12", "21","22","23","24","31","32","33","34","41","42","43"),"area"]),  ## classifications 11-43 are intensive Anthromes
+    sum(HYDE_anthromes[HYDE_anthromes[,"1978"] %in% c("51","52","53","54"),"area"]),  ## classification 51-54 are cultured Anthromes 
+    sum(HYDE_anthromes[HYDE_anthromes[,"1978"] %in% c("61","62","63"),"area"])  ## classifications 61-63 are wild lands
+  ), 
+### 1979
+  c(
+    sum(HYDE_anthromes[HYDE_anthromes[,"1979"] %in% c("11","12", "21","22","23","24","31","32","33","34","41","42","43"),"area"]),  ## classifications 11-43 are intensive Anthromes
+    sum(HYDE_anthromes[HYDE_anthromes[,"1979"] %in% c("51","52","53","54"),"area"]),  ## classification 51-54 are cultured Anthromes 
+    sum(HYDE_anthromes[HYDE_anthromes[,"1979"] %in% c("61","62","63"),"area"])  ## classifications 61-63 are wild lands
+  ), 
+  ### 1980
+  c(
+    sum(HYDE_anthromes[HYDE_anthromes[,"1980"] %in% c("11","12", "21","22","23","24","31","32","33","34","41","42","43"),"area"]),  ## classifications 11-43 are intensive Anthromes
+    sum(HYDE_anthromes[HYDE_anthromes[,"1980"] %in% c("51","52","53","54"),"area"]),  ## classification 51-54 are cultured Anthromes 
+    sum(HYDE_anthromes[HYDE_anthromes[,"1980"] %in% c("61","62","63"),"area"])  ## classifications 61-63 are wild lands
+  ), 
+### 1981
+  c(
+    sum(HYDE_anthromes[HYDE_anthromes[,"1981"] %in% c("11","12", "21","22","23","24","31","32","33","34","41","42","43"),"area"]),  ## classifications 11-43 are intensive Anthromes
+    sum(HYDE_anthromes[HYDE_anthromes[,"1981"] %in% c("51","52","53","54"),"area"]),  ## classification 51-54 are cultured Anthromes 
+    sum(HYDE_anthromes[HYDE_anthromes[,"1981"] %in% c("61","62","63"),"area"])  ## classifications 61-63 are wild lands
+  ), 
+  ### 1982
+  c(
+    sum(HYDE_anthromes[HYDE_anthromes[,"1982"] %in% c("11","12", "21","22","23","24","31","32","33","34","41","42","43"),"area"]),  ## classifications 11-43 are intensive Anthromes
+    sum(HYDE_anthromes[HYDE_anthromes[,"1982"] %in% c("51","52","53","54"),"area"]),  ## classification 51-54 are cultured Anthromes 
+    sum(HYDE_anthromes[HYDE_anthromes[,"1982"] %in% c("61","62","63"),"area"])  ## classifications 61-63 are wild lands
+  ), 
+### 1983
+  c(
+    sum(HYDE_anthromes[HYDE_anthromes[,"1983"] %in% c("11","12", "21","22","23","24","31","32","33","34","41","42","43"),"area"]),  ## classifications 11-43 are intensive Anthromes
+    sum(HYDE_anthromes[HYDE_anthromes[,"1983"] %in% c("51","52","53","54"),"area"]),  ## classification 51-54 are cultured Anthromes 
+    sum(HYDE_anthromes[HYDE_anthromes[,"1983"] %in% c("61","62","63"),"area"])  ## classifications 61-63 are wild lands
+  ), 
+  ### 1984
+  c(
+    sum(HYDE_anthromes[HYDE_anthromes[,"1984"] %in% c("11","12", "21","22","23","24","31","32","33","34","41","42","43"),"area"]),  ## classifications 11-43 are intensive Anthromes
+    sum(HYDE_anthromes[HYDE_anthromes[,"1984"] %in% c("51","52","53","54"),"area"]),  ## classification 51-54 are cultured Anthromes 
+    sum(HYDE_anthromes[HYDE_anthromes[,"1984"] %in% c("61","62","63"),"area"])  ## classifications 61-63 are wild lands
+  ), 
+### 1985
+  c(
+    sum(HYDE_anthromes[HYDE_anthromes[,"1985"] %in% c("11","12", "21","22","23","24","31","32","33","34","41","42","43"),"area"]),  ## classifications 11-43 are intensive Anthromes
+    sum(HYDE_anthromes[HYDE_anthromes[,"1985"] %in% c("51","52","53","54"),"area"]),  ## classification 51-54 are cultured Anthromes 
+    sum(HYDE_anthromes[HYDE_anthromes[,"1985"] %in% c("61","62","63"),"area"])  ## classifications 61-63 are wild lands
+  ), 
+  ### 1986
+  c(
+    sum(HYDE_anthromes[HYDE_anthromes[,"1986"] %in% c("11","12", "21","22","23","24","31","32","33","34","41","42","43"),"area"]),  ## classifications 11-43 are intensive Anthromes
+    sum(HYDE_anthromes[HYDE_anthromes[,"1986"] %in% c("51","52","53","54"),"area"]),  ## classification 51-54 are cultured Anthromes 
+    sum(HYDE_anthromes[HYDE_anthromes[,"1986"] %in% c("61","62","63"),"area"])  ## classifications 61-63 are wild lands
+  ), 
+
+### 1987
+  c(
+    sum(HYDE_anthromes[HYDE_anthromes[,"1987"] %in% c("11","12", "21","22","23","24","31","32","33","34","41","42","43"),"area"]),  ## classifications 11-43 are intensive Anthromes
+    sum(HYDE_anthromes[HYDE_anthromes[,"1987"] %in% c("51","52","53","54"),"area"]),  ## classification 51-54 are cultured Anthromes 
+    sum(HYDE_anthromes[HYDE_anthromes[,"1987"] %in% c("61","62","63"),"area"])  ## classifications 61-63 are wild lands
+  ), 
+  ### 1988
+  c(
+    sum(HYDE_anthromes[HYDE_anthromes[,"1988"] %in% c("11","12", "21","22","23","24","31","32","33","34","41","42","43"),"area"]),  ## classifications 11-43 are intensive Anthromes
+    sum(HYDE_anthromes[HYDE_anthromes[,"1988"] %in% c("51","52","53","54"),"area"]),  ## classification 51-54 are cultured Anthromes 
+    sum(HYDE_anthromes[HYDE_anthromes[,"1988"] %in% c("61","62","63"),"area"])  ## classifications 61-63 are wild lands
+  ), 
+### 1989
+  c(
+    sum(HYDE_anthromes[HYDE_anthromes[,"1989"] %in% c("11","12", "21","22","23","24","31","32","33","34","41","42","43"),"area"]),  ## classifications 11-43 are intensive Anthromes
+    sum(HYDE_anthromes[HYDE_anthromes[,"1989"] %in% c("51","52","53","54"),"area"]),  ## classification 51-54 are cultured Anthromes 
+    sum(HYDE_anthromes[HYDE_anthromes[,"1989"] %in% c("61","62","63"),"area"])  ## classifications 61-63 are wild lands
+  ), 
+  ### 1990
+  c(
+    sum(HYDE_anthromes[HYDE_anthromes[,"1990"] %in% c("11","12", "21","22","23","24","31","32","33","34","41","42","43"),"area"]),  ## classifications 11-43 are intensive Anthromes
+    sum(HYDE_anthromes[HYDE_anthromes[,"1990"] %in% c("51","52","53","54"),"area"]),  ## classification 51-54 are cultured Anthromes 
+    sum(HYDE_anthromes[HYDE_anthromes[,"1990"] %in% c("61","62","63"),"area"])  ## classifications 61-63 are wild lands
+  ), 
+
+### 1991
+  c(
+    sum(HYDE_anthromes[HYDE_anthromes[,"1991"] %in% c("11","12", "21","22","23","24","31","32","33","34","41","42","43"),"area"]),  ## classifications 11-43 are intensive Anthromes
+    sum(HYDE_anthromes[HYDE_anthromes[,"1991"] %in% c("51","52","53","54"),"area"]),  ## classification 51-54 are cultured Anthromes 
+    sum(HYDE_anthromes[HYDE_anthromes[,"1991"] %in% c("61","62","63"),"area"])  ## classifications 61-63 are wild lands
+  ), 
+  ### 1992
+  c(
+    sum(HYDE_anthromes[HYDE_anthromes[,"1992"] %in% c("11","12", "21","22","23","24","31","32","33","34","41","42","43"),"area"]),  ## classifications 11-43 are intensive Anthromes
+    sum(HYDE_anthromes[HYDE_anthromes[,"1992"] %in% c("51","52","53","54"),"area"]),  ## classification 51-54 are cultured Anthromes 
+    sum(HYDE_anthromes[HYDE_anthromes[,"1992"] %in% c("61","62","63"),"area"])  ## classifications 61-63 are wild lands
+  ), 
+### 1993
+  c(
+    sum(HYDE_anthromes[HYDE_anthromes[,"1993"] %in% c("11","12", "21","22","23","24","31","32","33","34","41","42","43"),"area"]),  ## classifications 11-43 are intensive Anthromes
+    sum(HYDE_anthromes[HYDE_anthromes[,"1993"] %in% c("51","52","53","54"),"area"]),  ## classification 51-54 are cultured Anthromes 
+    sum(HYDE_anthromes[HYDE_anthromes[,"1993"] %in% c("61","62","63"),"area"])  ## classifications 61-63 are wild lands
+  ), 
+  ### 1994
+  c(
+    sum(HYDE_anthromes[HYDE_anthromes[,"1994"] %in% c("11","12", "21","22","23","24","31","32","33","34","41","42","43"),"area"]),  ## classifications 11-43 are intensive Anthromes
+    sum(HYDE_anthromes[HYDE_anthromes[,"1994"] %in% c("51","52","53","54"),"area"]),  ## classification 51-54 are cultured Anthromes 
+    sum(HYDE_anthromes[HYDE_anthromes[,"1994"] %in% c("61","62","63"),"area"])  ## classifications 61-63 are wild lands
+  ), 
+### 1995
+  c(
+    sum(HYDE_anthromes[HYDE_anthromes[,"1995"] %in% c("11","12", "21","22","23","24","31","32","33","34","41","42","43"),"area"]),  ## classifications 11-43 are intensive Anthromes
+    sum(HYDE_anthromes[HYDE_anthromes[,"1995"] %in% c("51","52","53","54"),"area"]),  ## classification 51-54 are cultured Anthromes 
+    sum(HYDE_anthromes[HYDE_anthromes[,"1995"] %in% c("61","62","63"),"area"])  ## classifications 61-63 are wild lands
+  ), 
+  ### 1996
+  c(
+    sum(HYDE_anthromes[HYDE_anthromes[,"1996"] %in% c("11","12", "21","22","23","24","31","32","33","34","41","42","43"),"area"]),  ## classifications 11-43 are intensive Anthromes
+    sum(HYDE_anthromes[HYDE_anthromes[,"1996"] %in% c("51","52","53","54"),"area"]),  ## classification 51-54 are cultured Anthromes 
+    sum(HYDE_anthromes[HYDE_anthromes[,"1996"] %in% c("61","62","63"),"area"])  ## classifications 61-63 are wild lands
+  ), 
+
+### 1997
+  c(
+    sum(HYDE_anthromes[HYDE_anthromes[,"1997"] %in% c("11","12", "21","22","23","24","31","32","33","34","41","42","43"),"area"]),  ## classifications 11-43 are intensive Anthromes
+    sum(HYDE_anthromes[HYDE_anthromes[,"1997"] %in% c("51","52","53","54"),"area"]),  ## classification 51-54 are cultured Anthromes 
+    sum(HYDE_anthromes[HYDE_anthromes[,"1997"] %in% c("61","62","63"),"area"])  ## classifications 61-63 are wild lands
+  ), 
+  ### 1998
+  c(
+    sum(HYDE_anthromes[HYDE_anthromes[,"1998"] %in% c("11","12", "21","22","23","24","31","32","33","34","41","42","43"),"area"]),  ## classifications 11-43 are intensive Anthromes
+    sum(HYDE_anthromes[HYDE_anthromes[,"1998"] %in% c("51","52","53","54"),"area"]),  ## classification 51-54 are cultured Anthromes 
+    sum(HYDE_anthromes[HYDE_anthromes[,"1998"] %in% c("61","62","63"),"area"])  ## classifications 61-63 are wild lands
+  ), 
+### 1999
+  c(
+    sum(HYDE_anthromes[HYDE_anthromes[,"1999"] %in% c("11","12", "21","22","23","24","31","32","33","34","41","42","43"),"area"]),  ## classifications 11-43 are intensive Anthromes
+    sum(HYDE_anthromes[HYDE_anthromes[,"1999"] %in% c("51","52","53","54"),"area"]),  ## classification 51-54 are cultured Anthromes 
+    sum(HYDE_anthromes[HYDE_anthromes[,"1999"] %in% c("61","62","63"),"area"])  ## classifications 61-63 are wild lands
+  ), 
+  ### 2000
+  c(
+    sum(HYDE_anthromes[HYDE_anthromes[,"2000"] %in% c("11","12", "21","22","23","24","31","32","33","34","41","42","43"),"area"]),  ## classifications 11-43 are intensive Anthromes
+    sum(HYDE_anthromes[HYDE_anthromes[,"2000"] %in% c("51","52","53","54"),"area"]),  ## classification 51-54 are cultured Anthromes 
+    sum(HYDE_anthromes[HYDE_anthromes[,"2000"] %in% c("61","62","63"),"area"])  ## classifications 61-63 are wild lands
+  ), 
+
+### 2001
+  c(
+    sum(HYDE_anthromes[HYDE_anthromes[,"2001"] %in% c("11","12", "21","22","23","24","31","32","33","34","41","42","43"),"area"]),  ## classifications 11-43 are intensive Anthromes
+    sum(HYDE_anthromes[HYDE_anthromes[,"2001"] %in% c("51","52","53","54"),"area"]),  ## classification 51-54 are cultured Anthromes 
+    sum(HYDE_anthromes[HYDE_anthromes[,"2001"] %in% c("61","62","63"),"area"])  ## classifications 61-63 are wild lands
+  ), 
+  ### 2002
+  c(
+    sum(HYDE_anthromes[HYDE_anthromes[,"2002"] %in% c("11","12", "21","22","23","24","31","32","33","34","41","42","43"),"area"]),  ## classifications 11-43 are intensive Anthromes
+    sum(HYDE_anthromes[HYDE_anthromes[,"2002"] %in% c("51","52","53","54"),"area"]),  ## classification 51-54 are cultured Anthromes 
+    sum(HYDE_anthromes[HYDE_anthromes[,"2002"] %in% c("61","62","63"),"area"])  ## classifications 61-63 are wild lands
+  ), 
+### 2003
+  c(
+    sum(HYDE_anthromes[HYDE_anthromes[,"2003"] %in% c("11","12", "21","22","23","24","31","32","33","34","41","42","43"),"area"]),  ## classifications 11-43 are intensive Anthromes
+    sum(HYDE_anthromes[HYDE_anthromes[,"2003"] %in% c("51","52","53","54"),"area"]),  ## classification 51-54 are cultured Anthromes 
+    sum(HYDE_anthromes[HYDE_anthromes[,"2003"] %in% c("61","62","63"),"area"])  ## classifications 61-63 are wild lands
+  ), 
+  ### 2004
+  c(
+    sum(HYDE_anthromes[HYDE_anthromes[,"2004"] %in% c("11","12", "21","22","23","24","31","32","33","34","41","42","43"),"area"]),  ## classifications 11-43 are intensive Anthromes
+    sum(HYDE_anthromes[HYDE_anthromes[,"2004"] %in% c("51","52","53","54"),"area"]),  ## classification 51-54 are cultured Anthromes 
+    sum(HYDE_anthromes[HYDE_anthromes[,"2004"] %in% c("61","62","63"),"area"])  ## classifications 61-63 are wild lands
+  ), 
+### 2005
+  c(
+    sum(HYDE_anthromes[HYDE_anthromes[,"2005"] %in% c("11","12", "21","22","23","24","31","32","33","34","41","42","43"),"area"]),  ## classifications 11-43 are intensive Anthromes
+    sum(HYDE_anthromes[HYDE_anthromes[,"2005"] %in% c("51","52","53","54"),"area"]),  ## classification 51-54 are cultured Anthromes 
+    sum(HYDE_anthromes[HYDE_anthromes[,"2005"] %in% c("61","62","63"),"area"])  ## classifications 61-63 are wild lands
+  ), 
+  ### 2006
+  c(
+    sum(HYDE_anthromes[HYDE_anthromes[,"2006"] %in% c("11","12", "21","22","23","24","31","32","33","34","41","42","43"),"area"]),  ## classifications 11-43 are intensive Anthromes
+    sum(HYDE_anthromes[HYDE_anthromes[,"2006"] %in% c("51","52","53","54"),"area"]),  ## classification 51-54 are cultured Anthromes 
+    sum(HYDE_anthromes[HYDE_anthromes[,"2006"] %in% c("61","62","63"),"area"])  ## classifications 61-63 are wild lands
+  ), 
+
+### 2007
+  c(
+    sum(HYDE_anthromes[HYDE_anthromes[,"2007"] %in% c("11","12", "21","22","23","24","31","32","33","34","41","42","43"),"area"]),  ## classifications 11-43 are intensive Anthromes
+    sum(HYDE_anthromes[HYDE_anthromes[,"2007"] %in% c("51","52","53","54"),"area"]),  ## classification 51-54 are cultured Anthromes 
+    sum(HYDE_anthromes[HYDE_anthromes[,"2007"] %in% c("61","62","63"),"area"])  ## classifications 61-63 are wild lands
+  ), 
+  ### 2008
+  c(
+    sum(HYDE_anthromes[HYDE_anthromes[,"2008"] %in% c("11","12", "21","22","23","24","31","32","33","34","41","42","43"),"area"]),  ## classifications 11-43 are intensive Anthromes
+    sum(HYDE_anthromes[HYDE_anthromes[,"2008"] %in% c("51","52","53","54"),"area"]),  ## classification 51-54 are cultured Anthromes 
+    sum(HYDE_anthromes[HYDE_anthromes[,"2008"] %in% c("61","62","63"),"area"])  ## classifications 61-63 are wild lands
+  ), 
+### 2009
+  c(
+    sum(HYDE_anthromes[HYDE_anthromes[,"2009"] %in% c("11","12", "21","22","23","24","31","32","33","34","41","42","43"),"area"]),  ## classifications 11-43 are intensive Anthromes
+    sum(HYDE_anthromes[HYDE_anthromes[,"2009"] %in% c("51","52","53","54"),"area"]),  ## classification 51-54 are cultured Anthromes 
+    sum(HYDE_anthromes[HYDE_anthromes[,"2009"] %in% c("61","62","63"),"area"])  ## classifications 61-63 are wild lands
+  ), 
+  ### 2010
+  c(
+    sum(HYDE_anthromes[HYDE_anthromes[,"2010"] %in% c("11","12", "21","22","23","24","31","32","33","34","41","42","43"),"area"]),  ## classifications 11-43 are intensive Anthromes
+    sum(HYDE_anthromes[HYDE_anthromes[,"2010"] %in% c("51","52","53","54"),"area"]),  ## classification 51-54 are cultured Anthromes 
+    sum(HYDE_anthromes[HYDE_anthromes[,"2010"] %in% c("61","62","63"),"area"])  ## classifications 61-63 are wild lands
+  ), 
+
+
+### 2011
+  c(
+    sum(HYDE_anthromes[HYDE_anthromes[,"2011"] %in% c("11","12", "21","22","23","24","31","32","33","34","41","42","43"),"area"]),  ## classifications 11-43 are intensive Anthromes
+    sum(HYDE_anthromes[HYDE_anthromes[,"2011"] %in% c("51","52","53","54"),"area"]),  ## classification 51-54 are cultured Anthromes 
+    sum(HYDE_anthromes[HYDE_anthromes[,"2011"] %in% c("61","62","63"),"area"])  ## classifications 61-63 are wild lands
+  ), 
+  ### 2012
+  c(
+    sum(HYDE_anthromes[HYDE_anthromes[,"2012"] %in% c("11","12", "21","22","23","24","31","32","33","34","41","42","43"),"area"]),  ## classifications 11-43 are intensive Anthromes
+    sum(HYDE_anthromes[HYDE_anthromes[,"2012"] %in% c("51","52","53","54"),"area"]),  ## classification 51-54 are cultured Anthromes 
+    sum(HYDE_anthromes[HYDE_anthromes[,"2012"] %in% c("61","62","63"),"area"])  ## classifications 61-63 are wild lands
+  ), 
+### 2013
+  c(
+    sum(HYDE_anthromes[HYDE_anthromes[,"2013"] %in% c("11","12", "21","22","23","24","31","32","33","34","41","42","43"),"area"]),  ## classifications 11-43 are intensive Anthromes
+    sum(HYDE_anthromes[HYDE_anthromes[,"2013"] %in% c("51","52","53","54"),"area"]),  ## classification 51-54 are cultured Anthromes 
+    sum(HYDE_anthromes[HYDE_anthromes[,"2013"] %in% c("61","62","63"),"area"])  ## classifications 61-63 are wild lands
+  ), 
+  ### 2014
+  c(
+    sum(HYDE_anthromes[HYDE_anthromes[,"2014"] %in% c("11","12", "21","22","23","24","31","32","33","34","41","42","43"),"area"]),  ## classifications 11-43 are intensive Anthromes
+    sum(HYDE_anthromes[HYDE_anthromes[,"2014"] %in% c("51","52","53","54"),"area"]),  ## classification 51-54 are cultured Anthromes 
+    sum(HYDE_anthromes[HYDE_anthromes[,"2014"] %in% c("61","62","63"),"area"])  ## classifications 61-63 are wild lands
+  ), 
+### 2015
+  c(
+    sum(HYDE_anthromes[HYDE_anthromes[,"2015"] %in% c("11","12", "21","22","23","24","31","32","33","34","41","42","43"),"area"]),  ## classifications 11-43 are intensive Anthromes
+    sum(HYDE_anthromes[HYDE_anthromes[,"2015"] %in% c("51","52","53","54"),"area"]),  ## classification 51-54 are cultured Anthromes 
+    sum(HYDE_anthromes[HYDE_anthromes[,"2015"] %in% c("61","62","63"),"area"])  ## classifications 61-63 are wild lands
+  ), 
+  ### 2016
+  c(
+    sum(HYDE_anthromes[HYDE_anthromes[,"2016"] %in% c("11","12", "21","22","23","24","31","32","33","34","41","42","43"),"area"]),  ## classifications 11-43 are intensive Anthromes
+    sum(HYDE_anthromes[HYDE_anthromes[,"2016"] %in% c("51","52","53","54"),"area"]),  ## classification 51-54 are cultured Anthromes 
+    sum(HYDE_anthromes[HYDE_anthromes[,"2016"] %in% c("61","62","63"),"area"])  ## classifications 61-63 are wild lands
+  ), 
+
+### 2017
+  c(
+    sum(HYDE_anthromes[HYDE_anthromes[,"2017"] %in% c("11","12", "21","22","23","24","31","32","33","34","41","42","43"),"area"]),  ## classifications 11-43 are intensive Anthromes
+    sum(HYDE_anthromes[HYDE_anthromes[,"2017"] %in% c("51","52","53","54"),"area"]),  ## classification 51-54 are cultured Anthromes 
+    sum(HYDE_anthromes[HYDE_anthromes[,"2017"] %in% c("61","62","63"),"area"])  ## classifications 61-63 are wild lands
+  ), 
+  ### 2018
+  c(
+    sum(HYDE_anthromes[HYDE_anthromes[,"2018"] %in% c("11","12", "21","22","23","24","31","32","33","34","41","42","43"),"area"]),  ## classifications 11-43 are intensive Anthromes
+    sum(HYDE_anthromes[HYDE_anthromes[,"2018"] %in% c("51","52","53","54"),"area"]),  ## classification 51-54 are cultured Anthromes 
+    sum(HYDE_anthromes[HYDE_anthromes[,"2018"] %in% c("61","62","63"),"area"])  ## classifications 61-63 are wild lands
+  ), 
+### 2019
+  c(
+    sum(HYDE_anthromes[HYDE_anthromes[,"2019"] %in% c("11","12", "21","22","23","24","31","32","33","34","41","42","43"),"area"]),  ## classifications 11-43 are intensive Anthromes
+    sum(HYDE_anthromes[HYDE_anthromes[,"2019"] %in% c("51","52","53","54"),"area"]),  ## classification 51-54 are cultured Anthromes 
+    sum(HYDE_anthromes[HYDE_anthromes[,"2019"] %in% c("61","62","63"),"area"])  ## classifications 61-63 are wild lands
+  ), 
+  ### 2020
+  c(
+    sum(HYDE_anthromes[HYDE_anthromes[,"2020"] %in% c("11","12", "21","22","23","24","31","32","33","34","41","42","43"),"area"]),  ## classifications 11-43 are intensive Anthromes
+    sum(HYDE_anthromes[HYDE_anthromes[,"2020"] %in% c("51","52","53","54"),"area"]),  ## classification 51-54 are cultured Anthromes 
+    sum(HYDE_anthromes[HYDE_anthromes[,"2020"] %in% c("61","62","63"),"area"])  ## classifications 61-63 are wild lands
+  ),
+### 2021
+  c(
+    sum(HYDE_anthromes[HYDE_anthromes[,"2021"] %in% c("11","12", "21","22","23","24","31","32","33","34","41","42","43"),"area"]),  ## classifications 11-43 are intensive Anthromes
+    sum(HYDE_anthromes[HYDE_anthromes[,"2021"] %in% c("51","52","53","54"),"area"]),  ## classification 51-54 are cultured Anthromes 
+    sum(HYDE_anthromes[HYDE_anthromes[,"2021"] %in% c("61","62","63"),"area"])  ## classifications 61-63 are wild lands
+  ),
+  ### 2022
+  c(
+    sum(HYDE_anthromes[HYDE_anthromes[,"2022"] %in% c("11","12", "21","22","23","24","31","32","33","34","41","42","43"),"area"]),  ## classifications 11-43 are intensive Anthromes
+    sum(HYDE_anthromes[HYDE_anthromes[,"2022"] %in% c("51","52","53","54"),"area"]),  ## classification 51-54 are cultured Anthromes 
+    sum(HYDE_anthromes[HYDE_anthromes[,"2022"] %in% c("61","62","63"),"area"])  ## classifications 61-63 are wild lands
+  ),
+  ### 2023
+  c(
+    sum(HYDE_anthromes[HYDE_anthromes[,"2023"] %in% c("11","12","21","22","23","24","31","32","33","34","41","42","43"),"area"]),  ## classifications 11-43 are intensive Anthromes
+    sum(HYDE_anthromes[HYDE_anthromes[,"2023"] %in% c("51","52","53","54"),"area"]),  ## classification 51-54 are cultured Anthromes 
+    sum(HYDE_anthromes[HYDE_anthromes[,"2023"] %in% c("61","62","63"),"area"])  ## classifications 61-63 are wild lands
+  )
+))
+
+### colnames and rownames 
+colnames(anthromes_area_summary) <- c(seq(1900, 1950, by = 10), seq(1951, 2023, by = 1))
+rownames(anthromes_area_summary) <- c("intensive","cultured","wild")
+
+### add class variable -- used in melt later on
+anthromes_area_summary$class <- as.factor(c("intensive","cultured","wild"))
+```
+
+```{r}
+### make long
+anthromes_summary_long <- reshape2::melt(anthromes_area_summary[1:11,], id.vars = "class", variable.name = "year", value.name = "area")
+
+anthromes_summary_long$class <- factor(anthromes_summary_long$class, levels = rev(c("intensive","cultured","wild")))
+
+anthromes_summary_long$area <- as.numeric(anthromes_summary_long$area)
+
+```
+
+
+```{r}
+## subset dataset 
+ds_4plotting <- anthromes_summary_long[anthromes_summary_long$class %in% c("intensive","cultured","wild"),]
+ds_4plotting$area <- ds_4plotting$area/1000000 ### diivet to get ha *10^6
+ds_4plotting$year <- as.numeric(levels(ds_4plotting$year))[ds_4plotting$year] 
+```
+
+```{r}
+gg.anthrome_area2 <-  ggplot(aes(x = year, y = area, color = class, group = class, shape = class), data = ds_4plotting) + 
+                      geom_hline(yintercept = 0, lty = 3, col = "gray") +  
+                      geom_hline(yintercept = 20, lty = 3, col = "gray") +                    
+                      geom_hline(yintercept = 40, lty = 3, col = "gray") +
+                      geom_hline(yintercept = 60, lty = 3, col = "gray") +
+                      geom_point(size = 1) +
+                      geom_line() + 
+                      theme_classic() + 
+                      scale_color_manual(values = rev(c("#efcb68", "#70a0af", "#160c28")), 
+                                         name = "3-class Anthrome") + 
+                      scale_shape_manual(values = c(15, 16, 17), name = "3-class Anthrome") +
+                      ylab(expression("area (ha × 10"^6*")")) + 
+                      theme(legend.position = "top") #+ ylim(c(0,18))
+
+# tiff(file = "anthrome_areas_2.16.2024.tiff", width = 25, height = 10, units = "cm", compression = "lzw", res = 600)
+gg.anthrome_area2
+# dev.off()
+```
+
+# Fig 2
+
+```{r}
+library(readr)
+
+## read in regionalized population estimates from HYDE 3.2
+popc_r <- read_table("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/baseline/txt/popc_r.txt")
+urbc_r <- read_table("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/baseline/txt/urbc_r.txt")
+
+## pop density
+popd_r <- read_table("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/baseline/txt/popd_r.txt")
+## same for urban population estimates
+uopp_r <- read_table("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/baseline/txt/uopp_r.txt")
+## rangeland
+conv_rangeland_r <- read_table("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/baseline/txt/conv_rangeland_r.txt")
+## cropland
+cropland_r <- read_table("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/baseline/txt/cropland_r.txt")
+## grazingland
+grazing_r <- read_table("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/baseline/txt/grazing_r.txt")
+## irrigated lands - no rice
+ir_norice_r <- read_table("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/baseline/txt/ir_norice_r.txt")
+## irrigated lands with Rice
+ir_rice_r <- read_table("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/baseline/txt/ir_rice_r.txt")
+
+### pasturelands
+pasture_r <- read_table("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/baseline/txt/pasture_r.txt")
+## rangelands
+rangeland_r <- read_table("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/baseline/txt/rangeland_r.txt")
+## rainfed rice
+rf_rice_r <- read_table("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/baseline/txt/rf_rice_r.txt")
+## rainfed_norice
+rf_norice_r <- read_table("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/baseline/txt/rf_norice_r.txt")
+## rural poplulation
+rurc_r  <- read_table("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/baseline/txt/rurc_r.txt")
+## total irrigated area
+tot_irri_r  <- read_table("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/baseline/txt/tot_irri_r.txt")
+## total rainfed area
+tot_rainfed_r  <- read_table("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/baseline/txt/tot_rainfed_r.txt")
+## total rice area
+tot_rice_r  <- read_table("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/baseline/txt/tot_rice_r.txt")
+
+
+#######################################################################################################################################################
+####### READ LOWER -- this is for the CONFIDENCE INTERVAL stuff 
+#######################################################################################################################################################
+
+popc_r_lower <- read_table("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/lower/popc_r.txt")
+urbc_r_lower <- read_table("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/lower/urbc_r.txt")
+## pop density
+popd_r_lower <- read_table("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/lower/popd_r.txt")
+## same for urban population estimates
+uopp_r_lower <- read_table("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/lower/uopp_r.txt")
+## rangeland
+conv_rangeland_r_lower <- read_table("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/lower/conv_rangeland_r.txt")
+## cropland
+cropland_r_lower <- read_table("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/lower/cropland_r.txt")
+## grazingland
+grazing_r_lower <- read_table("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/lower/grazing_r.txt")
+## irrigated lands - no rice
+ir_norice_r_lower <- read_table("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/lower/ir_norice_r.txt")
+## irrigated lands with Rice
+ir_rice_r_lower <- read_table("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/lower/ir_rice_r.txt")
+
+### pasturelands
+pasture_r_lower <- read_table("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/lower/pasture_r.txt")
+## rangelands
+rangeland_r_lower <- read_table("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/lower/rangeland_r.txt")
+## rainfed rice
+rf_rice_r_lower <- read_table("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/lower/rf_rice_r.txt")
+## rainfed_norice
+rf_norice_r_lower <- read_table("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/lower/rf_norice_r.txt")
+## rural poplulation
+rurc_r_lower  <- read_table("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/lower/rurc_r.txt")
+## total irrigated area
+tot_irri_r_lower  <- read_table("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/lower/tot_irri_r.txt")
+## total rainfed area
+tot_rainfed_r_lower  <- read_table("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/lower/tot_rainfed_r.txt")
+## total rice area
+tot_rice_r_lower  <- read_table("C:/Users/JamesHogan/Box/James.Hogan_Workspace/ANTHROMES/HYDE_data_from_Kees_Goldewijk/lower/tot_rice_r.txt")
+```
+
+```{r}
+#############################################################################################################################################
+##########
+
+
+### TWO CLASSIFICATIONS:
+# Temperate vs. tropical -- based on IMAGE 3.0 regions, which are tropical vs. extratropical (i.e., temperate)?  see:  https://models.pbl.nl/image/index.php/IMAGE_framework/IMAGE_3.0_in_a_nutshell
+temperate <- c(1,2,11,12,13,14,15,16,19,20,23,27,28)
+tropical <- c(3,4,5,6,7,8,9,10,17,18,21,22,24,25,26)
+
+
+years <- c(seq(1900,1950, by = 10), seq(1951,2023, by = 1))
+```
+
+## population 
+### compute summaries
+```{r}
+#### POPULATION SUMMARY
+HYDE_3.3_popSumm  <- data.frame("year" = years,
+                                "land_use" = rep(c(rep("total", length(years)), rep("urban", length(years)), rep("rural", length(years))), 6),
+                                #### POPULATION
+                                "global" = c(colSums(popc_r[!popc_r$region == "Total", as.character(years)]), 
+                                             colSums(urbc_r[!urbc_r$region == "Total", as.character(years)]), 
+                                             colSums(rurc_r[!rurc_r$region == "Total", as.character(years)])),
+                                "global.lower" = c(colSums(popc_r_lower[!popc_r$region == "Total", as.character(years)]), 
+                                                   colSums(urbc_r_lower[!urbc_r$region == "Total", as.character(years)]), 
+                                                   colSums(rurc_r_lower[!rurc_r$region == "Total", as.character(years)])),
+                                "tropical" = c(colSums(popc_r[popc_r$region %in% tropical, as.character(years)]), 
+                                               colSums(urbc_r[urbc_r$region %in% tropical, as.character(years)]), 
+                                               colSums(rurc_r[rurc_r$region %in% tropical, as.character(years)])),
+                                "tropical.lower" = c(colSums(popc_r_lower[popc_r_lower$region %in% tropical, as.character(years)]), 
+                                                     colSums(urbc_r_lower[urbc_r_lower$region %in% tropical, as.character(years)]), 
+                                                     colSums(rurc_r_lower[rurc_r_lower$region %in% tropical, as.character(years)])),
+                                "temperate" = c(colSums(popc_r[popc_r$region %in% temperate, as.character(years)]),
+                                                colSums(urbc_r[urbc_r$region %in% temperate, as.character(years)]),  
+                                                colSums(rurc_r[rurc_r$region %in% temperate, as.character(years)])), 
+                                "temperate.lower" = c(colSums(popc_r_lower[popc_r$region %in% temperate, as.character(years)]),
+                                                      colSums(urbc_r_lower[urbc_r$region %in% temperate, as.character(years)]),  
+                                                      colSums(rurc_r_lower[rurc_r$region %in% temperate, as.character(years)])))
+                          
+## reshape to long 
+popSumm_long <- reshape2::melt(HYDE_3.3_popSumm[,c("year", "land_use", "global", "tropical", "temperate")], id.vars = c("land_use","year"))
+popSumm_long$land_use <- factor(popSumm_long$land_use, levels = c("total", "urban", "rural"))
+        
+### for lower
+popSumm_long_lower <- reshape2::melt(HYDE_3.3_popSumm[,c("year", "land_use", "global.lower", "tropical.lower", "temperate.lower")], id.vars = c("land_use","year"))
+popSumm_long_lower$land_use <- factor(popSumm_long_lower$land_use, levels = c("total", "urban", "rural"))
+
+
+### add lower to popSumm_long
+popSumm_long$lower <-  popSumm_long_lower$value
+popSumm_long$diff <-  popSumm_long$value - popSumm_long$lower
+```
+
+### plotting 
+```{r}
+
+###############
+library(ggplot2)                                
+
+gg_pop <- ggplot(aes(x = year, y = value), data = popSumm_long) + 
+          geom_hline(yintercept = 0, lty = 3) +
+          geom_hline(yintercept = 2e9, lty = 3) +
+          geom_hline(yintercept = 4e9, lty = 3) +
+          geom_hline(yintercept = 6e9, lty = 3) +
+          geom_hline(yintercept = 8e9, lty = 3) +
+          geom_ribbon(aes(ymin = value + diff, ymax = value - diff, fill = variable), alpha = 0.5, color = NA) +
+          geom_line(aes(color = variable)) + theme_classic() +
+          facet_wrap(vars(land_use)) + ylab("population") + theme(legend.position = c(0.9,0.75)) +
+          scale_color_manual(values = c("#4c5b5c", "#3772ff", "#df2935"), name = NULL) +
+          scale_fill_manual(values = c("#4c5b5c", "#3772ff", "#df2935"), name = NULL) +
+          scale_y_continuous(labels = label_number(scale_cut = cut_short_scale(space = TRUE)))
+            
+gg_pop
+```
+
+## Land Cover 1
+### compute summaries 
+```{r}
+## land cover SUMMARY
+
+## classificaiton #1 -- pasture vs. grazing vs. rangeland vs. cropland 
+
+HYDE_3.3_land_Summary <- data.frame("year" = years,
+                                    "land_type" = rep(c(rep("cropland", length(years)), #rep("grazing land", length(years)), 
+                                                        rep("rainfed area", length(years)), rep("rangeland", length(years))), 6),
+                                    "global" = c(unlist(cropland_r[cropland_r$region == "Total",as.character(years)]), 
+                                                 #colSums(grazing_r[as.character(years)]),
+                                                 unlist(tot_rainfed_r[tot_rainfed_r$region == "Total",as.character(years)]), 
+                                                 unlist(rangeland_r[rangeland_r$region == "Total",as.character(years)])),
+                                    "global.lower" = c(unlist(cropland_r_lower[cropland_r_lower$region == "Total",as.character(years)]), 
+                                                       #colSums(grazing_r[as.character(years)]),
+                                                       unlist(tot_rainfed_r_lower[tot_rainfed_r_lower$region == "Total",as.character(years)]), 
+                                                       unlist(rangeland_r_lower[rangeland_r_lower$region == "Total",as.character(years)])),
+                                    "tropical" = c(colSums(cropland_r[cropland_r$region %in% tropical, as.character(years)]), 
+                                                   #colSums(grazing_r[grazing_r$region %in% tropical, as.character(years)]), 
+                                                   colSums(tot_rainfed_r[tot_rainfed_r$region %in% tropical, as.character(years)]), 
+                                                   colSums(rangeland_r[rangeland_r$region %in% tropical, as.character(years)])),
+                                    "tropical.lower" = c(colSums(cropland_r_lower[cropland_r_lower$region %in% tropical, as.character(years)]), 
+                                                         #colSums(grazing_r[grazing_r$region %in% tropical, as.character(years)]), 
+                                                         colSums(tot_rainfed_r_lower[tot_rainfed_r_lower$region %in% tropical, as.character(years)]), 
+                                                         colSums(rangeland_r_lower[rangeland_r_lower$region %in% tropical, as.character(years)])),
+                                    "temperate" = c(colSums(cropland_r[cropland_r$region %in% temperate, as.character(years)]),
+                                                    #colSums(grazing_r[grazing_r$region %in% temperate, as.character(years)]),  
+                                                    colSums(tot_rainfed_r[tot_rainfed_r$region %in% temperate, as.character(years)]),
+                                                    colSums(rangeland_r[rangeland_r$region %in% temperate, as.character(years)])), 
+                                    "temperate.lower" = c(colSums(cropland_r_lower[cropland_r_lower$region %in% temperate, as.character(years)]),
+                                                         #colSums(grazing_r[grazing_r$region %in% temperate, as.character(years)]),  
+                                                         colSums(tot_rainfed_r_lower[tot_rainfed_r_lower$region %in% temperate, as.character(years)]),
+                                                         colSums(rangeland_r_lower[rangeland_r_lower$region %in% temperate, as.character(years)])))
+
+
+landSumm_long <- reshape2::melt(HYDE_3.3_land_Summary[,c("year", "land_type", "global", "tropical", "temperate")], 
+                                id.vars = c("land_type", "year"))
+landSumm_long$land_type <- factor(landSumm_long$land_type, levels = c("cropland", "rainfed area", "rangeland"))
+
+## reshape to long 
+landSumm_long_lower <- reshape2::melt(HYDE_3.3_land_Summary[,c("year", "land_type", "global.lower", "tropical.lower", "temperate.lower")], 
+                                      id.vars = c("land_type","year"))
+landSumm_long_lower$land_type <- factor(HYDE_3.3_land_Summary$land_type, levels = c("cropland", "rainfed area", "rangeland"))
+
+
+### add lower to popSumm_long
+landSumm_long$lower <-  landSumm_long_lower$value
+landSumm_long$diff <-  landSumm_long$value - landSumm_long$lower
+```
+
+### plotting 
+```{r}
+library(scales)
+
+gg_land <- ggplot(aes(x = year, y = value), data = landSumm_long) + 
+           geom_hline(yintercept = 0, lty = 3) +
+           geom_hline(yintercept = 5e6, lty = 3) +
+           geom_hline(yintercept = 10e6, lty = 3) +
+           geom_hline(yintercept = 15e6, lty = 3) +
+           geom_hline(yintercept = 20e6, lty = 3) +
+           geom_ribbon(aes(ymin = value + diff, ymax = value - diff, fill = variable), alpha = 0.5, color = NA) +
+           geom_line(aes(color = variable)) + theme_classic() +
+           facet_wrap(vars(land_type), nrow = 1) + ylab("land area (ha)") + 
+           theme(legend.position = c(0.6,0.7),
+                 axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) +
+           scale_color_manual(values = c("#4c5b5c", "#3772ff", "#df2935"), name = NULL)  +
+           scale_fill_manual(values = c("#4c5b5c", "#3772ff", "#df2935"), name = NULL) +
+           scale_y_continuous(labels = label_number(scale_cut = cut_short_scale(space = TRUE)))
+
+# tiff(filename = "HYDE3.3_LandClass2.tiff", width = 18, height = 6, compression = "lzw", res = 600, units = "cm")
+gg_land
+# dev.off()
+```
+
+## Land Cover 2
+### compute summaries 
+
+```{r}
+## classificaiton #2 -- built up area, irrigated lands, rainfed lands
+HYDE_3.3_land_SummaryB <- data.frame("year" = years,
+                                     "land_type" = rep(c(rep("built up area", length(years)), rep("irrigated area", length(years)), 
+                                                         rep("pastureland", length(years))), 3),
+                                     "global" = c(unlist(uopp_r[uopp_r$region == "Total",as.character(years)]), 
+                                                  unlist(tot_irri_r[tot_irri_r$region == "Total",as.character(years)]), 
+                                                  unlist(pasture_r[pasture_r$region == "Total",as.character(years)])),
+                                     "global.lower" = c(unlist(uopp_r_lower[uopp_r_lower$region == "Total",as.character(years)]), 
+                                                        unlist(tot_irri_r_lower[tot_irri_r_lower$region == "Total",as.character(years)]), 
+                                                        unlist(pasture_r_lower[pasture_r_lower$region == "Total",as.character(years)])),
+                                     "tropical" = c(colSums(uopp_r[uopp_r$region %in% tropical, as.character(years)]), 
+                                                    colSums(tot_irri_r[tot_irri_r$region %in% tropical, as.character(years)]), 
+                                                    colSums(pasture_r[pasture_r$region %in% tropical, as.character(years)])),
+                                     "tropical.lower" = c(colSums(uopp_r_lower[uopp_r_lower$region %in% tropical, as.character(years)]), 
+                                                          colSums(tot_irri_r_lower[tot_irri_r_lower$region %in% tropical, as.character(years)]), 
+                                                          colSums(pasture_r_lower[pasture_r_lower$region %in% tropical, as.character(years)])),
+                                     "temperate" = c(colSums(uopp_r[uopp_r$region %in% temperate, as.character(years)]),
+                                                     colSums(tot_irri_r[tot_irri_r$region %in% temperate, as.character(years)]),  
+                                                     colSums(pasture_r[pasture_r$region %in% temperate, as.character(years)])), 
+                                     "temperate.lower" = c(colSums(uopp_r_lower[uopp_r_lower$region %in% temperate, as.character(years)]),
+                                                           colSums(tot_irri_r_lower[tot_irri_r_lower$region %in% temperate, as.character(years)]),  
+                                                           colSums(pasture_r_lower[pasture_r_lower$region %in% temperate, as.character(years)])))
+
+
+landSumm_long2B <- reshape2::melt(HYDE_3.3_land_SummaryB[,c("year", "land_type", "global", "tropical", "temperate")], 
+                                  id.vars = c("land_type", "year"))
+landSumm_long2B$land_type <- factor(landSumm_long2B$land_type , levels = c("built up area", "irrigated area", "pastureland"))
+
+
+## reshape to long 
+landSumm_long2B_lower <- reshape2::melt(HYDE_3.3_land_SummaryB[,c("year", "land_type", "global.lower", "tropical.lower", "temperate.lower")], 
+                                        id.vars = c("land_type","year"))
+landSumm_long2B_lower$land_type <- factor(HYDE_3.3_land_SummaryB$land_type, levels = c("cropland", "rainfed area", "rangeland"))
+
+
+### add lower to landSumm_long
+landSumm_long2B$lower <- landSumm_long2B_lower$value
+landSumm_long2B$diff <- landSumm_long2B$value - landSumm_long2B$lower
+```
+
+### plotting
+```{r}
+gg_landB <- ggplot(aes(x = year, y = value), data = landSumm_long2B) + 
+            geom_hline(yintercept = 0, lty = 3) +
+            geom_hline(yintercept = 2e6, lty = 3) +
+            geom_hline(yintercept = 4e6, lty = 3) +
+            geom_hline(yintercept = 6e6, lty = 3) +
+            geom_hline(yintercept = 8e6, lty = 3) + 
+            geom_ribbon(aes(ymin = value + diff, ymax = value - diff, fill = variable), alpha = 0.5, color = NA) +
+            geom_line(aes(color = variable)) + theme_classic() +
+            facet_wrap(vars(land_type)) + ylab("land area (ha)") + 
+            theme(legend.position = c(0.1,0.7),
+                  axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) +
+            scale_color_manual(values = c("#4c5b5c", "#3772ff", "#df2935"), name = NULL) +
+            scale_fill_manual(values = c("#4c5b5c", "#3772ff", "#df2935"), name = NULL) +
+            scale_y_continuous(labels = label_number(scale_cut = cut_short_scale(space = TRUE)))
+
+
+# tiff(filename = "HYDE3.3_LandClass3_sameScale.tiff", width = 18, height = 6, compression = "lzw", res = 600, units = "cm")
+gg_landB
+# dev.off()
+
+
+## classificaiton #3 -- built up area, irrigated lands (SPLITTING IRRIGATED LANDS INTO RICE AND OTHERS), rainfed lands
+HYDE_3.3_land_SummaryC <- data.frame("year" = years,
+                                     "land_type" = rep(c(rep("built up area", length(years)), rep("total rice area", length(years)), 
+                                                         rep("rainfed - no rice", length(years)), rep("rainfed - rice", length(years)), 
+                                                         rep("irrigated - no rice", length(years)), rep("irrigated - rice", length(years))), 6),
+                                     "global" = c(colSums(uopp_r[as.character(years)]), 
+                                                  colSums(tot_rice_r[as.character(years)]), 
+                                                  colSums(rf_norice_r[as.character(years)]),
+                                                  colSums(rf_rice_r[as.character(years)]),
+                                                  colSums(ir_norice_r[as.character(years)]),
+                                                  colSums(ir_rice_r[as.character(years)])),
+                                     "global.lower" = c(colSums(uopp_r_lower[as.character(years)]), 
+                                                        colSums(tot_rice_r_lower[as.character(years)]), 
+                                                        colSums(rf_norice_r_lower[as.character(years)]),
+                                                        colSums(rf_rice_r_lower[as.character(years)]),
+                                                        colSums(ir_norice_r_lower[as.character(years)]),
+                                                        colSums(ir_rice_r_lower[as.character(years)])),
+                                    "tropical" = c(colSums(uopp_r[uopp_r$region %in% tropical, as.character(years)]), 
+                                                    colSums(tot_rice_r[tot_rice_r$region %in% tropical, as.character(years)]), 
+                                                    colSums(rf_norice_r[rf_norice_r$region %in% tropical, as.character(years)]), 
+                                                    colSums(rf_rice_r[rf_rice_r$region %in% tropical, as.character(years)]), 
+                                                    colSums(ir_norice_r[ir_norice_r$region %in% tropical, as.character(years)]), 
+                                                    colSums(ir_rice_r[ir_rice_r$region %in% tropical, as.character(years)])),
+                                    "tropical.lower" = c(colSums(uopp_r_lower[uopp_r_lower$region %in% tropical, as.character(years)]), 
+                                                         colSums(tot_rice_r_lower[tot_rice_r_lower$region %in% tropical, as.character(years)]), 
+                                                         colSums(rf_norice_r_lower[rf_norice_r_lower$region %in% tropical, as.character(years)]), 
+                                                         colSums(rf_rice_r_lower[rf_rice_r_lower$region %in% tropical, as.character(years)]), 
+                                                         colSums(ir_norice_r_lower[ir_norice_r_lower$region %in% tropical, as.character(years)]), 
+                                                         colSums(ir_rice_r_lower[ir_rice_r_lower$region %in% tropical, as.character(years)])),
+                                     "temperate" = c(colSums(uopp_r[uopp_r$region %in% temperate, as.character(years)]),
+                                                     colSums(tot_rice_r[tot_rice_r$region %in% temperate, as.character(years)]), 
+                                                     colSums(rf_norice_r[rf_norice_r$region %in% temperate, as.character(years)]), 
+                                                     colSums(rf_rice_r[rf_rice_r$region %in% temperate, as.character(years)]), 
+                                                     colSums(ir_norice_r[ir_norice_r$region %in% temperate, as.character(years)]), 
+                                                     colSums(ir_rice_r[ir_rice_r$region %in% temperate, as.character(years)])), 
+                                    "temperate.lower" = c(colSums(uopp_r_lower[uopp_r_lower$region %in% temperate, as.character(years)]),
+                                                          colSums(tot_rice_r_lower[tot_rice_r_lower$region %in% temperate, as.character(years)]), 
+                                                          colSums(rf_norice_r_lower[rf_norice_r_lower$region %in% temperate, as.character(years)]), 
+                                                          colSums(rf_rice_r_lower[rf_rice_r_lower$region %in% temperate, as.character(years)]), 
+                                                          colSums(ir_norice_r_lower[ir_norice_r_lower$region %in% temperate, as.character(years)]), 
+                                                          colSums(ir_rice_r_lower[ir_rice_r_lower$region %in% temperate, as.character(years)])))
+
+
+landSumm_long2C <- reshape2::melt(HYDE_3.3_land_SummaryC[,c("year", "land_type", "global", "tropical", "temperate")], id.vars = c("land_type", "year"))
+landSumm_long2C$land_type <- factor(landSumm_long2C$land_type , levels = c("built up area", "total rice area", "rainfed - no rice", 
+                                                                           "rainfed - rice", "irrigated - rice", "irrigated - no rice"))
+
+
+landSumm_long2C_lower <- reshape2::melt(HYDE_3.3_land_SummaryC[,c("year", "land_type", "global.lower", "tropical.lower", "temperate.lower")], 
+                                        id.vars = c("land_type", "year"))
+landSumm_long2C_lower$land_type <- factor(landSumm_long2C$land_type , levels = c("built up area", "total rice area", "rainfed - no rice", 
+                                                                                 "rainfed - rice", "irrigated - rice", "irrigated - no rice"))
+
+
+### add lower to landSumm_long2C
+landSumm_long2C$lower <- landSumm_long2C_lower$value
+landSumm_long2C$diff <- landSumm_long2C$value - landSumm_long2C$lower
+
+
+gg_land4 <- ggplot(aes(x = year, y = value), data = landSumm_long2C) + 
+            geom_ribbon(aes(ymin = value + diff, ymax = value - diff, fill = variable), alpha = 0.5, color = NA) +
+            geom_line(aes(color = variable)) + theme_classic() +
+            facet_wrap(vars(land_type)) + ylab("land area (ha)") + theme(legend.position = "top") +
+            scale_color_manual(values = c("#4c5b5c", "#3772ff", "#df2935"), name = NULL) +
+            scale_fill_manual(values = c("#4c5b5c", "#3772ff", "#df2935"), name = NULL) 
+
+# tiff(filename = "HYDE3.3_LandClass4_sameScale.tiff", width = 18, height = 12, compression = "lzw", res = 600, units = "cm")
+gg_land4
+# dev.off()
+```
+
+
+
+## ALL plotting together 
+```{r}
+#### PUTTING TOGETHER
+library(ggpubr)
+
+# tiff(filename = "HYDE3.3_ScenarioSummary_fixedScales.tiff", width = 18, height = 18, compression = "lzw", res = 600, units = "cm")
+ggarrange(gg_pop + theme(axis.text.x = element_blank(), 
+                          axis.title.x = element_blank(),
+                          legend.position = "none"),
+          gg_landB  + theme(axis.text.x = element_blank(), 
+                            axis.title.x = element_blank(),
+                            legend.position = "none"), 
+          gg_land + theme(legend.position = "none"),  
+          nrow = 3, ncol = 1, heights = c(1,1,1.25), labels = "AUTO", common.legend = T, align = "v")
+# dev.off()
+
+```
+
+## Land Summary XX
+### computing summaries 
+```{r}
+#################################
+
+
+HYDE_3.3_land_SummaryX <- data.frame("year" = years,
+                                     "land_type" = rep(c(rep("built up area", length(years)), rep("irrigated area", length(years)), 
+                                                         rep("rainfed area", length(years)), rep("cropland", length(years)),
+                                                         rep("rangeland", length(years)), rep("pastureland", length(years))), 3),
+                                     "global" = c(colSums(uopp_r[as.character(years)]), 
+                                                  colSums(tot_irri_r[as.character(years)]),
+                                                  colSums(tot_rainfed_r[as.character(years)]),
+                                                  colSums(cropland_r[as.character(years)]),
+                                                  colSums(rangeland_r[as.character(years)]), 
+                                                  colSums(pasture_r[as.character(years)])),
+                                     "tropical" = c(colSums(uopp_r[uopp_r$region %in% tropical, as.character(years)]), 
+                                                    colSums(tot_irri_r[tot_irri_r$region %in% tropical, as.character(years)]), 
+                                                    colSums(tot_rainfed_r[tot_rainfed_r$region %in% tropical, as.character(years)]), 
+                                                    colSums(cropland_r[cropland_r$region %in% tropical, as.character(years)]), 
+                                                    colSums(rangeland_r[rangeland_r$region %in% tropical, as.character(years)]), 
+                                                    colSums(pasture_r[pasture_r$region %in% tropical, as.character(years)])),
+                                     "temperate" = c(colSums(uopp_r[uopp_r$region %in% temperate, as.character(years)]),
+                                                     colSums(tot_irri_r[tot_irri_r$region %in% temperate, as.character(years)]),  
+                                                     colSums(tot_rainfed_r[tot_rainfed_r$region %in% temperate, as.character(years)]), 
+                                                     colSums(cropland_r[cropland_r$region %in% temperate, as.character(years)]),
+                                                     colSums(rangeland_r[rangeland_r$region %in% temperate, as.character(years)]),
+                                                     colSums(pasture_r[pasture_r$region %in% temperate, as.character(years)])))
+
+
+landSumm_longX <- reshape2::melt(HYDE_3.3_land_SummaryX, id.vars = c("land_type", "year"))
+landSumm_longX$land_type <- factor(landSumm_longX$land_type , levels = c("built up area", "irrigated area", "rainfed area", 
+                                                                         "cropland", "rangeland", "pastureland"))
+
+```
+
+###plotting
+```{r}
+gg_landX <- ggplot(aes(x = year, y = value), data = landSumm_longX) + 
+  geom_line(aes(color = variable), lwd = 1) + theme_classic() +
+  facet_wrap(vars(land_type)) + ylab("land area (ha)") + 
+  theme(legend.position = c(0.1,0.7),
+        axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) +
+  scale_color_manual(values = c("#4c5b5c", "#3772ff", "#df2935"), name = NULL) +
+  scale_y_continuous(labels = label_number(scale_cut = cut_short_scale(space = TRUE)))
+
+
+gg_landX
+
+```
+
+
+
+
