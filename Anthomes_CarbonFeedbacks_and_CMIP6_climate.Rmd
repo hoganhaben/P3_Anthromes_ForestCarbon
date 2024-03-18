@@ -514,106 +514,6 @@ hist(gamma_feedback[gamma_feedback$anthromes2023_3CL == "wildlands" & gamma_feed
 
 ```
 
-
-# ANOVAS
-```{r}
-## need as factors 
-beta_feedback$anthromes2023_3CL <- as.factor(beta_feedback$anthromes2023_3CL)
-gamma_feedback$anthromes2023_3CL <- as.factor(gamma_feedback$anthromes2023_3CL)
-```
-
-
-## beta feedback - all data
-```{r}
-anova1 <- aov(beta ~  anthromes2023_3CL * global_region, data = beta_feedback)
-summary(anova1)
-```
-## beta feedback - temperate & boreal
-```{r}
-mod1a <- aov(beta ~ anthromes2023_3CL, data = beta_feedback[beta_feedback$global_region == "temperate & boreal",])
-tukey1a <- glht(mod1a, linfct = mcp(anthromes2023_3CL = "Tukey"))
-
-cld(tukey1a)
-```
-## beta feedback - tropical
-```{r}
-beta_feedback$anthromes2023_3CL <- as.factor(beta_feedback$anthromes2023_3CL)
-
-mod1b <- aov(beta ~ anthromes2023_3CL, data = beta_feedback[beta_feedback$global_region == "tropical",])
-tukey1b <- glht(mod1b, linfct = mcp(anthromes2023_3CL = "Tukey"))
-
-cld(tukey1b)
-```
-## gamma feedback - all data
-```{r}
-anova2 <- aov(gamma ~ anthromes2023_3CL * global_region, data = gamma_feedback)
-
-summary(anova2)
-```
-## beta feedback - temperate & boreal
-```{r}
-mod2a <- aov(gamma ~ anthromes2023_3CL, data = gamma_feedback[gamma_feedback$global_region == "temperate & boreal",])
-tukey2a <- glht(mod1b, linfct = mcp(anthromes2023_3CL = "Tukey"))
-
-cld(tukey2a)
-```
-
-## beta feedback - tropical
-```{r}
-mod2b <- aov(gamma ~ anthromes2023_3CL, data = gamma_feedback[gamma_feedback$global_region == "tropical",])
-tukey2b <- glht(mod1b, linfct = mcp(anthromes2023_3CL = "Tukey"))
-
-cld(tukey2b)
-```
-
-
-# Effect sizes 
-## beta
-```{r}
-
-options(es.use_symbols = TRUE) # get nice symbols when printing! (On Windows, requires R >= 4.2.0)
-
-eff_anova1 <- eta_squared(anova1, partial = FALSE, alternative = "two.sided")
-
-print(eff_anova1, digits = 4)
-```
-## gamma
-```{r}
-eff_anova2 <- eta_squared(anova2, partial = FALSE, alternative = "two.sided")
-
-print(eff_anova2, digits = 4)
-```
-## plotting
-```{r}
-effSize_df <- rbind(as.data.frame(eff_anova1), as.data.frame(eff_anova2))
-effSize_df$feedback = c(rep("Beta", 3), rep("Gamma", 3))
-
-### need to fix the CI LOW for 2 global region eta2 estimates
-effSize_df[effSize_df$Parameter == "global_region",]$CI_low <-  effSize_df[effSize_df$Parameter == "global_region",]$Eta2 - (effSize_df[effSize_df$Parameter == "global_region",]$CI_high - effSize_df[effSize_df$Parameter == "global_region",]$Eta2)
-```
-
-
-```{r}
-gg.feedbacks <- ggplot(aes(x = Parameter, y = Eta2, color = feedback, shape = feedback), data = effSize_df) + 
-                geom_hline(yintercept = 0, lty = 3, col = "gray") + 
-                geom_hline(yintercept = 0.1, lty = 3, col = "gray") + 
-                geom_hline(yintercept = 0.2, lty = 3, col = "gray") + 
-                geom_hline(yintercept = 0.3, lty = 3, col = "gray") + 
-                geom_hline(yintercept = 0.4, lty = 3, col = "gray") + 
-                geom_point(position = position_dodge(0.9)) + 
-                geom_errorbar(aes(ymin = CI_low, ymax = CI_high), position = position_dodge(0.9)) +
-                theme_classic() + scale_x_discrete(labels = c('3-class Anthrome', 'global region', 'interaction')) + 
-                scale_color_manual(values = c("black", "gray50"), name = NULL, labels = c(expression(italic(beta)), expression(italic(gamma)))) +
-                scale_shape_manual(values = c(19,17), name = NULL, labels = c(expression(italic(beta)), expression(italic(gamma)))) +
-                ylab(expression(eta^2)) + theme(legend.position = c(0.1, 0.85),
-                                                axis.title.x = element_blank()) +
-                guides(color = guide_legend(override.aes = list(shape = c(19,17))))
-
-tiff(filename = "effect_sizes-Feedbacks.tiff", width = 9, height = 5.55, units = "cm", res = 600, compression = "lzw", re = 600)
-gg.feedbacks
-dev.off()
-```
-
 # Translating C-feedback to calculations of the Carbon stock sensitivity to global change - CO2 and warming effects
 ```{r}
 ### read in the historical TEMP and CO2 data
@@ -692,6 +592,126 @@ summary_beta <- Rmisc::summarySE(beta_feedback, measurevar = "C_flux_Mg_ha", gro
 
 summary_beta
 ```
+
+
+
+
+# ANOVAS
+```{r}
+## need as factors 
+beta_feedback$anthromes2023_3CL <- as.factor(beta_feedback$anthromes2023_3CL)
+gamma_feedback$anthromes2023_3CL <- as.factor(gamma_feedback$anthromes2023_3CL)
+```
+
+
+## beta feedback - all data
+```{r}
+anova1 <- aov(C_flux_Mg_ha ~  anthromes2023_3CL * global_region, data = beta_feedback)
+summary(anova1)
+```
+```{r}
+anova1.r <- aov(C_flux_Mg_ha ~ global_region, data = beta_feedback)
+summary(anova1.r)
+```
+
+## beta feedback - temperate & boreal
+```{r}
+mod1a <- aov(C_flux_Mg_ha ~ anthromes2023_3CL, data = beta_feedback[beta_feedback$global_region == "temperate & boreal",])
+tukey1a <- glht(mod1a, linfct = mcp(anthromes2023_3CL = "Tukey"))
+
+cld(tukey1a)
+```
+
+## beta feedback - tropical
+```{r}
+beta_feedback$anthromes2023_3CL <- as.factor(beta_feedback$anthromes2023_3CL)
+
+mod1b <- aov(C_flux_Mg_ha ~ anthromes2023_3CL, data = beta_feedback[beta_feedback$global_region == "tropical",])
+tukey1b <- glht(mod1b, linfct = mcp(anthromes2023_3CL = "Tukey"))
+
+cld(tukey1b)
+```
+
+## gamma feedback - all data
+```{r}
+anova2 <- aov(C_flux_Mg_ha ~ anthromes2023_3CL * global_region, data = gamma_feedback)
+
+summary(anova2)
+```
+```{r}
+anova2.r <- aov(C_flux_Mg_ha ~ global_region, data = gamma_feedback)
+summary(anova2.r)
+```
+
+
+## gamma feedback - temperate & boreal
+```{r}
+mod2a <- aov(C_flux_Mg_ha ~ anthromes2023_3CL, data = gamma_feedback[gamma_feedback$global_region == "temperate & boreal",])
+tukey2a <- glht(mod1b, linfct = mcp(anthromes2023_3CL = "Tukey"))
+
+cld(tukey2a)
+```
+
+## gamma feedback - tropical
+```{r}
+mod2b <- aov(C_flux_Mg_ha ~ anthromes2023_3CL, data = gamma_feedback[gamma_feedback$global_region == "tropical",])
+tukey2b <- glht(mod1b, linfct = mcp(anthromes2023_3CL = "Tukey"))
+
+cld(tukey2b)
+```
+
+
+# Effect sizes 
+## beta
+```{r}
+
+options(es.use_symbols = TRUE) # get nice symbols when printing! (On Windows, requires R >= 4.2.0)
+
+eff_anova1 <- eta_squared(anova1, partial = FALSE, alternative = "two.sided")
+
+print(eff_anova1, digits = 4)
+```
+
+## gamma
+```{r}
+eff_anova2 <- eta_squared(anova2, partial = FALSE, alternative = "two.sided")
+
+print(eff_anova2, digits = 4)
+```
+
+## plotting
+```{r}
+effSize_df <- rbind(as.data.frame(eff_anova1), as.data.frame(eff_anova2))
+effSize_df$feedback = c(rep("Beta", 3), rep("Gamma", 3))
+
+### need to fix the CI LOW for 2 global region eta2 estimates
+effSize_df[effSize_df$Parameter == "global_region",]$CI_low <-  effSize_df[effSize_df$Parameter == "global_region",]$Eta2 - (effSize_df[effSize_df$Parameter == "global_region",]$CI_high - effSize_df[effSize_df$Parameter == "global_region",]$Eta2)
+```
+
+
+```{r}
+gg.feedbacks <- ggplot(aes(x = Parameter, y = Eta2, color = feedback, shape = feedback), data = effSize_df) + 
+                geom_hline(yintercept = 0, lty = 3, col = "gray") + 
+                geom_hline(yintercept = 0.1, lty = 3, col = "gray") + 
+                geom_hline(yintercept = 0.2, lty = 3, col = "gray") + 
+                geom_hline(yintercept = 0.3, lty = 3, col = "gray") + 
+                geom_hline(yintercept = 0.4, lty = 3, col = "gray") + 
+                geom_point(position = position_dodge(0.9)) + 
+                geom_errorbar(aes(ymin = CI_low, ymax = CI_high), position = position_dodge(0.9)) +
+                theme_classic() + scale_x_discrete(labels = c('3-class Anthrome', 'global region', 'interaction')) + 
+                scale_color_manual(values = c("black", "gray50"), name = NULL, labels = c(expression(italic(beta)), expression(italic(gamma)))) +
+                scale_shape_manual(values = c(19,17), name = NULL, labels = c(expression(italic(beta)), expression(italic(gamma)))) +
+                ylab(expression(eta^2)) + theme(legend.position = c(0.1, 0.85),
+                                                axis.title.x = element_blank()) +
+                guides(color = guide_legend(override.aes = list(shape = c(19,17))))
+
+tiff(filename = "effect_sizes-Feedbacks.tiff", width = 9, height = 5.55, units = "cm", res = 600, compression = "lzw", re = 600)
+gg.feedbacks
+dev.off()
+```
+
+
+
 
 ## make some plots -- Carbon flux in Megagrams
 
